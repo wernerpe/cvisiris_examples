@@ -18,7 +18,8 @@ from pydrake.all import (PiecewisePolynomial,
                         MeshcatVisualizer,
                         Role,
                         TriangleSurfaceMesh,
-                        SurfaceTriangle)
+                        SurfaceTriangle,
+                        IrisRegionsFromCliqueCover)
 import time
 import pydrake
 from ur3e_demo import UrDiagram, SetDiffuse
@@ -30,7 +31,9 @@ import pickle
 import os
 from pydrake.all import VisibilityGraph
 from pydrake.all import SceneGraphCollisionChecker
-np.random.seed(0)
+
+np.random.seed(0) #malloc
+#np.random.seed(1) #freezes
 
 meshcat = StartMeshcat()
 builder = RobotDiagramBuilder()
@@ -122,87 +125,102 @@ def check_collision_by_ik(q0,q1,q2, min_dist=1e-5):
     q = np.array([q0,q1,q2])
     return 1.*col_func_handle2(q) 
 
-def plot_collision_constraint(N = 50, q_min = q_min, q_max= q_max):
-    if f"col_cons{N}.pkl" in os.listdir('tmp'):
-        with open(f"tmp/col_cons{N}.pkl", 'rb') as f:
-            d = pickle.load(f)
-            vertices = d['vertices']
-            triangles = d['triangles']
-    else:  
-        vertices, triangles = mcubes.marching_cubes_func(
-        tuple(
-                q_min), tuple(
-                q_max), N, N, N, check_collision_by_ik, 0.5)
-        with open(f"tmp/col_cons{N}.pkl", 'wb') as f:
-                d = {'vertices': vertices, 'triangles': triangles}
-                pickle.dump(d, f)
-
-    tri_drake = [SurfaceTriangle(*t) for t in triangles]
-
-    vertices += _offset_meshcat_2.reshape(-1,3)
-    meshcat.SetObject("/collision_constraint",
-                                    TriangleSurfaceMesh(tri_drake, vertices),
-                                    Rgba(1, 0, 0, 1), wireframe=True)
+N = 50
+#points = np.array([sample_cfree_QPoint() for _ in range(N)])
+# with open('points.pkl', 'wb') as f:
+#     pickle.dump({'p': points}, f)
+if 'points_malloc.pkl' in os.listdir():
+    with open('points_malloc.pkl', 'rb') as f:
+        d = pickle.load(f)
+        points = d['p']
+else:
+    raise ValueError("file not found")
+iris_options = IrisOptions()
+iris_options.configuration_space_margin = 1e-4
+#print(len(cliques))
+regions = IrisRegionsFromCliqueCover(checker, points.T, iris_options, 3, parallelize=True)
+#plot_regions(meshcat, regions, offset = _offset_meshcat_2)
+print('')
         
-def plot_points(points, name, size = 0.05, color = Rgba(0.06, 0.0, 0, 1)):
-    for i, pt in enumerate(points):
-        n_i = name+f"/pt{i}"
-        meshcat.SetObject(n_i,
-                          Sphere(size),
-                          color)
-        meshcat.SetTransform(n_i, 
-                             RigidTransform(
-                             RotationMatrix(), 
-                             np.array(pt)+_offset_meshcat_2.reshape(-1)))
+# def plot_collision_constraint(N = 50, q_min = q_min, q_max= q_max):
+#     if f"col_cons{N}.pkl" in os.listdir('tmp'):
+#         with open(f"tmp/col_cons{N}.pkl", 'rb') as f:
+#             d = pickle.load(f)
+#             vertices = d['vertices']
+#             triangles = d['triangles']
+#     else:  
+#         vertices, triangles = mcubes.marching_cubes_func(
+#         tuple(
+#                 q_min), tuple(
+#                 q_max), N, N, N, check_collision_by_ik, 0.5)
+#         with open(f"tmp/col_cons{N}.pkl", 'wb') as f:
+#                 d = {'vertices': vertices, 'triangles': triangles}
+#                 pickle.dump(d, f)
+
+#     tri_drake = [SurfaceTriangle(*t) for t in triangles]
+
+#     vertices += _offset_meshcat_2.reshape(-1,3)
+#     meshcat.SetObject("/collision_constraint",
+#                                     TriangleSurfaceMesh(tri_drake, vertices),
+#                                     Rgba(1, 0, 0, 1), wireframe=True)
         
-def plot_edges(edges, name, radius, color= Rgba(0.06, 0.0, 0, 1)):
-    for i, e in edges:
+# def plot_points(points, name, size = 0.05, color = Rgba(0.06, 0.0, 0, 1)):
+#     for i, pt in enumerate(points):
+#         n_i = name+f"/pt{i}"
+#         meshcat.SetObject(n_i,
+#                           Sphere(size),
+#                           color)
+#         meshcat.SetTransform(n_i, 
+#                              RigidTransform(
+#                              RotationMatrix(), 
+#                              np.array(pt)+_offset_meshcat_2.reshape(-1)))
+        
+# def plot_edges(edges, name, radius, color= Rgba(0.06, 0.0, 0, 1)):
+#     for i, e in edges:
          
-        pass
+#         pass
 
-def compute_rotation_matrix(a, b):
-    # Normalize the points
-    a = a / np.linalg.norm(a)
-    b = b / np.linalg.norm(b)
+# def compute_rotation_matrix(a, b):
+#     # Normalize the points
+#     a = a / np.linalg.norm(a)
+#     b = b / np.linalg.norm(b)
     
-    # Calculate the rotation axis
-    rotation_axis = np.cross(a, b)
-    rotation_axis /= np.linalg.norm(rotation_axis)
+#     # Calculate the rotation axis
+#     rotation_axis = np.cross(a, b)
+#     rotation_axis /= np.linalg.norm(rotation_axis)
     
-    # Calculate the rotation angle
-    dot_product = np.dot(a, b)
-    rotation_angle = np.arccos(np.clip(dot_product, -1.0, 1.0))
+#     # Calculate the rotation angle
+#     dot_product = np.dot(a, b)
+#     rotation_angle = np.arccos(np.clip(dot_product, -1.0, 1.0))
     
-    # Construct the rotation matrix using Rodrigues' formula
-    skew_matrix = np.array([[0, -rotation_axis[2], rotation_axis[1]],
-                            [rotation_axis[2], 0, -rotation_axis[0]],
-                            [-rotation_axis[1], rotation_axis[0], 0]])
-    rotation_matrix = np.eye(3) + np.sin(rotation_angle) * skew_matrix + (1 - np.cos(rotation_angle)) * np.dot(skew_matrix, skew_matrix)
+#     # Construct the rotation matrix using Rodrigues' formula
+#     skew_matrix = np.array([[0, -rotation_axis[2], rotation_axis[1]],
+#                             [rotation_axis[2], 0, -rotation_axis[0]],
+#                             [-rotation_axis[1], rotation_axis[0], 0]])
+#     rotation_matrix = np.eye(3) + np.sin(rotation_angle) * skew_matrix + (1 - np.cos(rotation_angle)) * np.dot(skew_matrix, skew_matrix)
     
-    return rotation_matrix
+#     return rotation_matrix
 
-def plot_edge(pt1, pt2, name, color, size = 0.01):
-    meshcat.SetObject(name,
-                        Cylinder(size, np.linalg.norm(pt1-pt2)),
-                        color)
+# def plot_edge(pt1, pt2, name, color, size = 0.01):
+#     meshcat.SetObject(name,
+#                         Cylinder(size, np.linalg.norm(pt1-pt2)),
+#                         color)
     
-    dir = pt2-pt1
-    rot = compute_rotation_matrix(np.array([0,0,1]), dir )
-    offs = rot@np.array([0,0,np.linalg.norm(pt1-pt2)/2])
-    meshcat.SetTransform(name, 
-                        RigidTransform(
-                        RotationMatrix(rot), 
-                        np.array(pt1)+offs+_offset_meshcat_2))
+#     dir = pt2-pt1
+#     rot = compute_rotation_matrix(np.array([0,0,1]), dir )
+#     offs = rot@np.array([0,0,np.linalg.norm(pt1-pt2)/2])
+#     meshcat.SetTransform(name, 
+#                         RigidTransform(
+#                         RotationMatrix(rot), 
+#                         np.array(pt1)+offs+_offset_meshcat_2))
 
-def plot_edges(edges, name, color = Rgba(0,0,0,1), size = 0.01):
-    for i, e in enumerate(edges):
-         plot_edge(e[0], e[1], name + f"/e_{i}", color= color, size=size)
+# def plot_edges(edges, name, color = Rgba(0,0,0,1), size = 0.01):
+#     for i, e in enumerate(edges):
+#          plot_edge(e[0], e[1], name + f"/e_{i}", color= color, size=size)
 
-#plot_points(points, size=0.1, name = 'a')
-plot_collision_constraint(60)
+# #plot_points(points, size=0.1, name = 'a')
+# plot_collision_constraint(60)
 
-N = 200
-points = np.array([sample_cfree_QPoint() for _ in range(N)])
 
 # plot_points(points, 'vgraph')
 
@@ -236,12 +254,5 @@ points = np.array([sample_cfree_QPoint() for _ in range(N)])
 # for i, cl_e in enumerate(cl_edges):
 #     plot_edges(cl_e, f"cl_e{i}", color=colors[i])
 
-from pydrake.all import IrisRegionsFromCliqueCover
+
 from visualization_utils import plot_regions 
-iris_options = IrisOptions()
-iris_options.configuration_space_margin = 1e-4
-#print(len(cliques))
-regions = IrisRegionsFromCliqueCover(checker, points.T, iris_options, 3, parallelize=True)
-plot_regions(meshcat, regions, offset = _offset_meshcat_2)
-print('')
-        
