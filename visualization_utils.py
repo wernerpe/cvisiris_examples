@@ -13,7 +13,37 @@ import random
 import colorsys
 from pydrake.all import PiecewisePolynomial
 
+def generate_maximally_different_colors(n):
+    """
+    Generate n maximally different random colors for matplotlib.
 
+    Parameters:
+        n (int): Number of colors to generate.
+
+    Returns:
+        List of RGB tuples representing the random colors.
+    """
+    if n <= 0:
+        raise ValueError("Number of colors (n) must be greater than zero.")
+
+    # Define a list to store the generated colors
+    colors = []
+
+    # Generate n random hues, ensuring maximally different colors
+    hues = [i / n for i in range(n)]
+
+    # Shuffle the hues to get random order of colors
+    random.shuffle(hues)
+
+    # Convert each hue to RGB
+    for hue in hues:
+        # We keep saturation and value fixed at 0.9 and 0.8 respectively
+        saturation = 0.9
+        value = 0.8
+        rgb = colorsys.hsv_to_rgb(hue, saturation, value)
+        colors.append(rgb)
+
+    return colors
 
 def plot_surface(meshcat_instance,
                  path,
@@ -211,3 +241,51 @@ def generate_walk_around_polytope(h_polytope, num_verts):
     t_knots = np.linspace(0, 1,  verts_to_visit.shape[1])
     lin_traj = PiecewisePolynomial.FirstOrderHold(t_knots, verts_to_visit)
     return lin_traj
+
+
+def plot_regions(meshcat, regions, ellipses = None,
+                     region_suffix = '', colors = None,
+                     wireframe = False,
+                     opacity = 0.7,
+                     fill = True,
+                     line_width = 10,
+                     darken_factor = .2,
+                     el_opacity = 0.3,
+                     offset = np.zeros(3)):
+        if colors is None:
+            colors = generate_maximally_different_colors(len(regions))
+
+        for i, region in enumerate(regions):
+            c = Rgba(*[col for col in colors[i]],opacity)
+            prefix = f"/iris/regions{region_suffix}/{i}"
+            name = prefix + "/hpoly"
+            if region.ambient_dimension() == 3:
+                plot_hpoly3d(meshcat, name, region,
+                                  c, wireframe = wireframe, resolution = 50, offset = offset)
+
+def get_plot_poly_mesh(region, resolution):
+
+        def inpolycheck(q0, q1, q2, A, b):
+            q = np.array([q0, q1, q2])
+            res = np.min(1.0 * (A @ q - b <= 0))
+            # print(res)
+            return res
+
+        aabb_max, aabb_min = get_AABB_limits(region)
+
+        col_hand = partial(inpolycheck, A=region.A(), b=region.b())
+        vertices, triangles = mcubes.marching_cubes_func(tuple(aabb_min),
+                                                         tuple(aabb_max),
+                                                         resolution,
+                                                         resolution,
+                                                         resolution,
+                                                         col_hand,
+                                                         0.5)
+        tri_drake = [SurfaceTriangle(*t) for t in triangles]
+        return vertices, tri_drake
+
+def plot_hpoly3d(meshcat, name, hpoly, color, wireframe = True, resolution = 30, offset = np.zeros(3)):
+        verts, triangles = get_plot_poly_mesh(hpoly,
+                                                   resolution=resolution)
+        meshcat.SetObject(name, TriangleSurfaceMesh(triangles, verts+offset.reshape(-1,3)),
+                                color, wireframe=wireframe)

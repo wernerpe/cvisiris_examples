@@ -19,7 +19,8 @@ def networkx_to_metis_format(graph):
 
 
 def compute_cliques_REDUVCC(ad_mat, maxtime = 30):
-    nx_graph = nx.Graph(ad_mat)
+    #this is messed up, nx adds self edges when initializing from sparse matrix
+    nx_graph = nx.Graph(ad_mat.toarray())
     metis_lines = networkx_to_metis_format(nx_graph)
     edges = 0
     for i in range(ad_mat.shape[0]):
