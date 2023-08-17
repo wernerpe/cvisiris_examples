@@ -30,7 +30,7 @@ class VisSeeder:
         self.alpha = alpha
         self.eps = eps
         self.maxit = max_iterations
-        self.M = int(np.log(1-(1-alpha)**(1/N))/np.log((1-eps)) + 0.5)
+        self.M = 10000#int(np.log(1-(1-alpha)**(1/N))/np.log((1-eps)) + 0.5)
         if self.vb: 
             print(strftime("[%H:%M:%S] ", gmtime()) +'[VisSeeder] Point Insertion attempts M:', str(self.M))
             print(strftime("[%H:%M:%S] ", gmtime()) +f"[VisSeeder] {1-self.alpha:.2f} probability that unseen region is less than {100*eps:.1f} '%' of Cfree ")
@@ -69,7 +69,7 @@ class VisSeeder:
             if self.logger is not None: self.logger.time()
 
             #grow the regions with obstacles
-            regions_step, is_full_iris = self.iris_w_obstacles(points[mhs_idx, :].squeeze().reshape(len(mhs_idx),-1), self.sregs, self.logger, self.regions)
+            regions_step, is_full_iris = self.iris_w_obstacles(points[mhs_idx, :].squeeze().reshape(len(mhs_idx),-1), self.sregs, self.regions)
             self.regions += regions_step
             self.region_groups.append(regions_step)
             if self.logger is not None: self.logger.time()

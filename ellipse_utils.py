@@ -5,35 +5,38 @@ def switch_ellipse_description(A, b):
     d = np.linalg.solve(A.T@A, -A.T@b)
     return Hyperellipsoid(A,d), A, d
 
-def get_seed_ellipse(pt1, pt2, eps = 0.01):
-    dim = pt1.shape[0]
-    pts = [pt1, pt2]
-    for _ in range(2*dim):
-        m = 0.5*(pt1+pt2) + eps*(np.random.rand(2,1)-0.5)
-        pts.append(m)
+# def get_seed_ellipse(pt1, pt2, eps = 0.01):
+#     dim = pt1.shape[0]
+#     pts = [pt1, pt2]
+#     for _ in range(2*dim):
+#         m = 0.5*(pt1+pt2) + eps*(np.random.rand(2,1)-0.5)
+#         pts.append(m)
 
-    prog = MathematicalProgram()
-    A = prog.NewSymmetricContinuousVariables(dim, 'A')
-    b = prog.NewContinuousVariables(dim, 'b')
-    prog.AddMaximizeLogDeterminantCost(A)
-    for idx, pt in enumerate(pts):
-        S = prog.NewSymmetricContinuousVariables(dim+1, 'S')
-        prog.AddPositiveSemidefiniteConstraint(S)
-        prog.AddLinearEqualityConstraint(S[0,0] == 1)
-        v = (A@pt + b.reshape(2,1)).T
-        c = (S[1:,1:]-np.eye(dim)).reshape(-1)
-        for idx in range(dim):
-            prog.AddLinearEqualityConstraint(S[0,1 + idx]-v[0,idx], 0 )
-        for ci in c:
-            prog.AddLinearEqualityConstraint(ci, 0 )
+#     prog = MathematicalProgram()
+#     A = prog.NewSymmetricContinuousVariables(dim, 'A')
+#     b = prog.NewContinuousVariables(dim, 'b')
+#     prog.AddMaximizeLogDeterminantCost(A)
+#     for idx, pt in enumerate(pts):
+#         S = prog.NewSymmetricContinuousVariables(dim+1, 'S')
+#         prog.AddPositiveSemidefiniteConstraint(S)
+#         prog.AddLinearEqualityConstraint(S[0,0] == 1)
+#         v = (A@pt + b.reshape(2,1)).T
+#         c = (S[1:,1:]-np.eye(dim)).reshape(-1)
+#         for idx in range(dim):
+#             prog.AddLinearEqualityConstraint(S[0,1 + idx]-v[0,idx], 0 )
+#         for ci in c:
+#             prog.AddLinearEqualityConstraint(ci, 0 )
 
-    prog.AddPositiveSemidefiniteConstraint(A)
+#     prog.AddPositiveSemidefiniteConstraint(A)
 
-    sol = Solve(prog)
-    if sol.is_success():
-        return switch_ellipse_description(sol.GetSolution(A), sol.GetSolution(b))
-    else:
-        return None, None, None
+#     sol = Solve(prog)
+#     if sol.is_success():
+
+
+
+#         return switch_ellipse_description(sol.GetSolution(A), sol.GetSolution(b))
+#     else:
+#         return None, None, None
 
 def get_lj_ellipse(pts):
     if len(pts) ==1:
@@ -52,11 +55,11 @@ def get_lj_ellipse(pts):
     b = prog.NewContinuousVariables(dim, 'b')
     prog.AddMaximizeLogDeterminantCost(A)
     for idx, pt in enumerate(pts):
-        pt = pt.reshape(2,1)
+        pt = pt.reshape(dim,1)
         S = prog.NewSymmetricContinuousVariables(dim+1, 'S')
         prog.AddPositiveSemidefiniteConstraint(S)
-        prog.AddLinearEqualityConstraint(S[0,0] == 1)
-        v = (A@pt + b.reshape(2,1)).T
+        prog.AddLinearEqualityConstraint(S[0,0] == 0.99)
+        v = (A@pt + b.reshape(dim,1)).T
         c = (S[1:,1:]-np.eye(dim)).reshape(-1)
         for idx in range(dim):
             prog.AddLinearEqualityConstraint(S[0,1 + idx]-v[0,idx], 0 )
@@ -64,11 +67,24 @@ def get_lj_ellipse(pts):
             prog.AddLinearEqualityConstraint(ci, 0 )
 
     prog.AddPositiveSemidefiniteConstraint(A) # eps * identity
-    prog.AddPositiveSemidefiniteConstraint(10000*np.eye(dim)-A)
-
+    prog.AddPositiveSemidefiniteConstraint(1e6*np.eye(dim)-A)
+    from pydrake.all import MosekSolver, SolverId
+    prog.SetSolverOption(SolverId("Mosek"), "tol", 1e-16)
     sol = Solve(prog)
+    print(sol.get_solver_id().name())
     if sol.is_success():
-        HE, _, _ =switch_ellipse_description(sol.GetSolution(A), sol.GetSolution(b))
+        Aval = sol.GetSolution(A)
+        bval = sol.GetSolution(b)
+        print(f"nr pts {len(pts)}")
+        print('first descr')
+        for i,pt in enumerate(pts):
+            print(i," cont ",(Aval@pt + bval).T@(Aval@pt + bval)<=1.0, " val ", (Aval@pt + bval).T@(Aval@pt + bval))
+
+        HE, _, _ = switch_ellipse_description(sol.GetSolution(A), sol.GetSolution(b))
+        print('second descr')
+        for pt in pts:
+            print(i," cont ",HE.PointInSet(pt), " val ", (pt -HE.center()).T@HE.A().T@HE.A()@(pt -HE.center()))
+
         return HE
     else:
         return None

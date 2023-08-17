@@ -138,9 +138,8 @@ class Logger:
 
 
 class CliqueApproachLogger:
-    def __init__(self, world, world_name, config, seed, N, eps, estimate_coverage):
-        root = "/home/peter/git/visiris"
-        self.world = world
+    def __init__(self, world_name, config, seed, N, eps, estimate_coverage):
+        root = "/home/peter/git/cvisiris_examples"
         self.timings = []
         self.name_exp ="experiment_" +world_name+f"_{seed}_{N}_{eps:.3f}" + config
         self.expdir = root+"/logs/"+self.name_exp
@@ -215,21 +214,25 @@ class CliqueApproachLogger:
             for l in summary:
                 f.write(l)
         
-        if t_total - self.t_last_plot >= self.plt_time:
-            self.t_last_plot = t_total
-            #save picture
-            fig, ax = plt.subplots(figsize = (10,10))
-            self.world.plot_cfree_offset(ax)
-            itz = 0
-            for g,s in zip(vs.region_groups, vs.seed_points):
-                rnd_artist = ax.plot([0,0],[0,0], alpha = 0)
-                for r in g:
-                    self.world.plot_HPoly(ax, r, color =rnd_artist[0].get_color(), zorder = itz)
-                ax.scatter(s.reshape(-1,2)[:,0], s.reshape(-1,2)[:,1], c =rnd_artist[0].get_color(), zorder = itz+1)
-                itz+=1
-            pts, full = vs.sample_cfree(100, vs.M, vs.regions)
-            ax.scatter(pts[:,0], pts[:,1], c = 'k')
-            ax.set_title(f"iteration {iteration}")
-            plt.savefig(self.expdir+f"/images/img_it{iteration}.png")
+        self.connectivity_graph = nx.Graph()
+        for idx in range(len(vs.regions)):
+            self.connectivity_graph.add_node(idx)
+            
+        for idx1 in range(len(vs.regions)):
+            for idx2 in range(idx1 +1, len(vs.regions)):
+                r1 = vs.regions[idx1]
+                r2 = vs.regions[idx2]
+                if r1.IntersectsWith(r2):
+                    self.connectivity_graph.add_edge(idx1,idx2)
 
-            #plt.close('all')
+        fig = plt.figure(figsize=(10,10))
+        hues = generate_distinct_colors(len(vs.region_groups)+1)[1:]
+        colors = []
+        for g, h in zip(vs.region_groups, hues):
+            colors += [h]*len(g)
+
+        nx.draw_spring(self.connectivity_graph, 
+                       with_labels = True, 
+                       node_color = colors)
+        plt.title(f"iteration {iteration}")
+        plt.savefig(self.expdir+f"/images/img_it{iteration}.png")

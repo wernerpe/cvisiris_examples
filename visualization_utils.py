@@ -289,3 +289,18 @@ def plot_hpoly3d(meshcat, name, hpoly, color, wireframe = True, resolution = 30,
                                                    resolution=resolution)
         meshcat.SetObject(name, TriangleSurfaceMesh(triangles, verts+offset.reshape(-1,3)),
                                 color, wireframe=wireframe)
+
+def plot_ellipses(meshcat, ellipses, name, colors, offset = None):
+    for i, e in enumerate(ellipses):
+        c = colors[i]
+        prefix = f"/{name}/ellipses/{i}"
+        plot_ellipse(meshcat, prefix, e, c, offset)
+
+def plot_ellipse( meshcat, name, ellipse, color, offset = None):
+    
+        shape, pose = ellipse.ToShapeWithPose()
+        if offset is not None:
+            pose2 = RigidTransform(pose.rotation(), pose.translation() + offset) 
+        meshcat.SetObject(name, shape, color)
+        meshcat.SetTransform(name, pose2)
+

@@ -82,12 +82,13 @@ def compute_minimal_clique_partition_nx(adj_mat):
     return cliques
 
 def get_iris_metrics(cliques, collision_handle):
-    seed_ellipses = [get_lj_ellipse(k) for k in cliques]
+    #seed_ellipses = [get_lj_ellipse(k) for k in cliques]
+    seed_ellipses = [Hyperellipsoid.MinimumVolumeCircumscribedEllipsoid(k.T, rank_tol = 1e-12) for k in cliques]
     seed_points = []
     for k,se in zip(cliques, seed_ellipses):
         center = se.center()
         dim = len(se.center())
-        if not collision_handle(center):
+        if collision_handle(center):
             distances = np.linalg.norm(np.array(k).reshape(-1,dim) - center, axis = 1).reshape(-1)
             mindist_idx = np.argmin(distances)
             seed_points.append(k[mindist_idx])
@@ -105,4 +106,4 @@ def get_iris_metrics(cliques, collision_handle):
     #idxs = np.argsort([s.Volume() for s in seed_ellipses])[::-1]
     hs = seed_points#[seed_points[i] for i in idxs]
     se = seed_ellipses_scaled #[seed_ellipses_scaled[i] for i in idxs]
-    return hs, se
+    return hs, se, seed_ellipses

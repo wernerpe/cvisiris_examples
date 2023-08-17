@@ -1,13 +1,13 @@
 import numpy as np
 from independent_set_solver import solve_max_independent_set_integer
 from clique_covers import compute_greedy_clique_partition, get_iris_metrics,compute_minimal_clique_partition_nx, compute_cliques_REDUVCC
-from seeding_utils import shrink_regions
-import time
+# from visibility_utils import shrink_regions
+# import time
 from time import strftime,gmtime
-import matplotlib.pyplot as plt
+# import matplotlib.pyplot as plt
 import pickle
-from pydrake.all import HPolyhedron
-import networkx as nx
+from pydrake.all import HPolyhedron, Hyperellipsoid
+# import networkx as nx
 
 
 class VisCliqueDecomp:
@@ -23,7 +23,6 @@ class VisCliqueDecomp:
                  logger = None,
                  approach = 0
                  ):
-        
         self.approach = approach
         self.logger = logger
         if self.logger is not None: self.logger.time()
@@ -45,6 +44,8 @@ class VisCliqueDecomp:
         self.seed_points = []
         self.regions = []
         self.region_groups = []
+        self.cliques = []
+        self.metrics_iteration = []
 
     def run(self):
         done = False
@@ -80,11 +81,12 @@ class VisCliqueDecomp:
                 end_idx = end_idx_cand[0]
             else:
                 end_idx = len(cliques_idxs)
-            self.cliques = np.array([points[i,:] for i in cliques_idxs[:end_idx]])
-            nr_cliques_big_enough = len(self.cliques)
+            self.cliques_step = np.array([points[i,:] for i in cliques_idxs[:end_idx]])
+            self.cliques.append(cliques_idxs[:end_idx])
+            nr_cliques_big_enough = len(self.cliques_step)
             #compute seed points and initial iris metrics
-            self.seed_points, self.metrics = get_iris_metrics(self.cliques, self.col_handle)
-
+            self.seed_points, self.metrics, unscaled = get_iris_metrics(self.cliques_step, self.col_handle)
+            self.metrics_iteration.append([Hyperellipsoid(un.A(), seed_p) for un, seed_p in zip(unscaled, self.seed_points)])
             #self.seed_points +=[points[mhs_idx, :].squeeze()]
             if self.vb : 
                 print(strftime("[%H:%M:%S] ", gmtime()) +'[VisCliqueDecomp] Found ', nr_cliques_big_enough, ' cliques')

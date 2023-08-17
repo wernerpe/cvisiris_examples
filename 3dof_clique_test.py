@@ -1,4 +1,3 @@
-
 #pydrake imports
 from pydrake.all import RationalForwardKinematics
 import mcubes
@@ -93,7 +92,7 @@ def eval_cons(q, c, tol):
     return 1-1*float(c.evaluator().CheckSatisfied(q, tol))
 
 
-scaler = 1 #np.array([0.8, 1., 0.8, 1, 0.8, 1, 0.8]) #do you even geometry bro?
+scaler = 1 #np.array([0.8, 1., 0.8, 1, 0.8, 1, 0.8])
 q_min = np.array([-2.6, -2., -1.9])
 q_max = np.array([ 2.6,  2.,  1.9])
 q_diff = q_max-q_min
