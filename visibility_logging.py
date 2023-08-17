@@ -9,10 +9,10 @@ import networkx as nx
 from visibility_utils import generate_distinct_colors, shrink_regions
 from pydrake.all import HPolyhedron
 from visibility_clique_decomposition import VisCliqueDecomp
-
+root = "/home/peter/git/cvisiris_examples"
 class Logger:
     def __init__(self, experiment_name, seed, N, alpha, eps, estimate_coverage):
-        root = "/home/peter/git/drake_visiris_build/drake/C_Iris_Examples/"
+        
         timestamp = datetime.now()
         timestamp_str = timestamp.strftime("%Y%m%d%H%M%S")
         self.timings = []
@@ -139,9 +139,11 @@ class Logger:
 
 class CliqueApproachLogger:
     def __init__(self, world_name, config, seed, N, eps, estimate_coverage):
-        root = "/home/peter/git/cvisiris_examples"
+        #root = "/home/peter/git/cvisiris_examples"
         self.timings = []
-        self.name_exp ="experiment_" +world_name+f"_{seed}_{N}_{eps:.3f}" + config
+        timestamp = datetime.now()
+        timestamp_str = timestamp.strftime("%Y%m%d%H%M%S")
+        self.name_exp ="experiment_" +world_name+f"_{seed}_{N}_{eps:.3f}" + config + timestamp_str
         self.expdir = root+"/logs/"+self.name_exp
         self.t_last_plot = -100
         self.coverage_estimator = estimate_coverage

@@ -34,7 +34,7 @@ from visibility_logging import CliqueApproachLogger
 import os
 import pickle
 
-seed = 0
+seed = 1
 np.random.seed(seed) 
 
 meshcat = StartMeshcat()
