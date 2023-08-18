@@ -23,7 +23,7 @@ from visibility_logging import CliqueApproachLogger
 from visibility_clique_decomposition import VisCliqueDecomp
 from region_generation import SNOPT_IRIS_ellipsoid
 
-add_shelf = False
+add_shelf = True
 seed = 0
 np.random.seed(seed)
 
@@ -67,7 +67,7 @@ snopt_iris_options.num_collision_infeasible_samples = 19
 snopt_iris_options.relative_termination_threshold = 0.02
 
 
-N = 500
+N = 1000
 eps = 0.1
 approach = 0
 ap_names = ['redu', 'greedy', 'nx']

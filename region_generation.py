@@ -33,7 +33,6 @@ def SNOPT_IRIS_ellipsoid(q_seeds, metrics, old_regions, region_obstacles, logger
 
 def SNOPT_IRIS_obstacles(q_seeds, region_obstacles, old_regions, logger, plant, context, snoptiris_options, estimate_coverage, coverage_threshold):
     regions = []
-    is_full = False
     for reg_indx, q_seed in enumerate(q_seeds):
         #q_seed = Ratforwardkin.ComputeQValue(s_seed.reshape(-1,1), np.zeros((7,1)))
         #print('snopt iris call')

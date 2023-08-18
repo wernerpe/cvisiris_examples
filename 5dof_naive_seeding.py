@@ -35,8 +35,8 @@ from tqdm import tqdm
 from ur3e_demo import UrDiagram, SetDiffuse
 
 
-add_shelf = False
-seed = 0
+add_shelf = True
+seed = 1
 np.random.seed(seed)
 
 ur = UrDiagram(num_ur = 1, weld_wrist = True, add_shelf = add_shelf,
@@ -70,7 +70,7 @@ estimate_coverage = get_coverage_estimator(sample_cfree, pts = 5000)
 
 snopt_iris_options = IrisOptions()
 snopt_iris_options.require_sample_point_is_contained = True
-snopt_iris_options.iteration_limit = 1
+snopt_iris_options.iteration_limit = 15
 snopt_iris_options.configuration_space_margin = 1.0e-3
 #snopt_iris_options.max_faces_per_collision_pair = 60
 snopt_iris_options.termination_threshold = -1
@@ -124,7 +124,7 @@ iris_handle = partial(SNOPT_IRIS_obstacles,
 VS = VisSeeder(N = N,
                 alpha = alpha,
                 eps = eps,
-                max_iterations = 300,
+                max_iterations = 600,
                 sample_cfree = sample_cfree,
                 build_vgraph = vgraph_builder,
                 iris_w_obstacles = iris_handle,
