@@ -59,7 +59,7 @@ estimate_coverage = get_coverage_estimator(sample_cfree, pts = 5000)
 snopt_iris_options = IrisOptions()
 snopt_iris_options.require_sample_point_is_contained = True
 snopt_iris_options.iteration_limit = 1
-snopt_iris_options.configuration_space_margin = 1.0e-3
+snopt_iris_options.configuration_space_margin = 0.5e-3
 #snopt_iris_options.max_faces_per_collision_pair = 60
 snopt_iris_options.termination_threshold = -1
 #snopt_iris_options.q_star = np.zeros(3)
@@ -68,25 +68,25 @@ snopt_iris_options.relative_termination_threshold = 0.02
 
 
 N = 1000
-eps = 0.1
+eps = 0.05
 approach = 0
 ap_names = ['redu', 'greedy', 'nx']
 
+
+vgraph_handle = partial(vgraph, checker = checker, parallelize = True) 
+clogger = CliqueApproachLogger(f"5dof_ur_init_sp_{'shelf' if add_shelf else 'noshelf'}",f"{ap_names[approach]}", seed = seed, N = N, eps= eps, estimate_coverage=estimate_coverage)
 iris_handle = partial(SNOPT_IRIS_ellipsoid, 
                       region_obstacles = [],
-                      logger = None, 
+                      logger = clogger, 
                       plant = plant, 
                       context = diagram_context,
                       snoptiris_options = snopt_iris_options,
                       estimate_coverage = estimate_coverage,
                       coverage_threshold = 1- eps)
 
-vgraph_handle = partial(vgraph, checker = checker, parallelize = True) 
-clogger = CliqueApproachLogger(f"5dof_ur_{'shelf' if add_shelf else 'noshelf'}",f"{ap_names[approach]}", seed = seed, N = N, eps= eps, estimate_coverage=estimate_coverage)
-
 vcd = VisCliqueDecomp(N, 
                 eps,
-                max_iterations=100,
+                max_iterations=5,
                 sample_cfree = sample_cfree,
                 col_handle= col_func_handle_,
                 build_vgraph=vgraph_handle,

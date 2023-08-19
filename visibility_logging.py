@@ -146,12 +146,14 @@ class CliqueApproachLogger:
         self.name_exp ="experiment_" +world_name+f"_{seed}_{N}_{eps:.3f}" + config + timestamp_str
         self.expdir = root+"/logs/"+self.name_exp
         self.t_last_plot = -100
+        self.nr_regions = 0
         self.coverage_estimator = estimate_coverage
         self.summary_file = self.expdir+"/summary/summary_"+self.name_exp+".txt"
         #M = int(np.log(1-(1-alpha)**(1/N))/np.log((1-eps)) + 0.5)
         if not os.path.exists(self.expdir):
             os.makedirs(self.expdir+"/images")
             os.makedirs(self.expdir+"/data")
+            os.makedirs(self.expdir+"/regions")
             os.makedirs(self.expdir+"/summary")
             with open(self.summary_file, 'w') as f:
                 f.write("summary "+self.name_exp+"\n")
@@ -167,6 +169,14 @@ class CliqueApproachLogger:
     def log_string(self, string):
         with open(self.summary_file, 'a') as f:
             f.write(string +'\n')
+    
+    def log_region(self, r: HPolyhedron):
+        self.nr_regions +=1
+        r_A = r.A() 
+        r_b = r.b()
+        data = {'ra': r_A, 'rb': r_b}
+        with open(self.expdir+f"/regions/region_{self.nr_regions}"+".pkl", 'wb') as f:
+            pickle.dump(data,f)
 
     def log(self, vs: VisCliqueDecomp, iteration):
         #self.timings.append(time.time())

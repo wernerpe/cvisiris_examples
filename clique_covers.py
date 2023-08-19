@@ -65,6 +65,53 @@ def compute_greedy_clique_partition(adj_mat):
             done = True
     return cliques
 
+def find_clique_neighbors(adj_mat, clique):
+    nei = []
+    cl_mem = set([i for i in clique])
+    for c in clique:
+        all_nei = set([i for i in np.where(adj_mat[c,:] ==1)[0]])
+        nei.append(all_nei - all_nei&cl_mem)
+    nei_clique = nei[0]
+    if len(clique)>1:
+        for n in nei[1:]:
+            nei_clique = nei_clique&n
+    return np.array(list(nei_clique))
+
+def extend_cliques(adj_mat, cliques):
+    extended_cliques = []
+    for clique in cliques:
+        idx_neighbors = find_clique_neighbors(adj_mat, clique)
+        if len(idx_neighbors):
+            ad_nei = adj_mat[idx_neighbors,:]
+            ad_nei = ad_nei[:,idx_neighbors]
+            ad_inv = 1-ad_nei
+            ad_inv = np.fill_diagonal(ad_inv, 0)
+            _, indx_nei_clique = solve_max_independent_set_integer(ad_inv)
+            extended_cliques.append(np.array( clique.tolist() + [idx_neighbors[i] for i in indx_nei_clique]))
+        else:
+            extended_cliques.append(clique)
+    return extend_cliques
+
+# def compute_greedy_clique_partition_edge_removal(adj_mat):
+#     cliques = []
+#     done = False
+#     adj_curr = adj_mat.copy()
+#     adj_curr = 1- adj_curr
+#     np.fill_diagonal(adj_curr, 0)
+#     ind_curr = np.arange(len(adj_curr))
+#     while not done:
+#         val, ind_max_clique_local = solve_max_independent_set_integer(adj_curr)
+#         #non_max_ind_local = np.arange(len(adj_curr))
+#         #non_max_ind_local = np.delete(non_max_ind_local, ind_max_clique_local, None)
+#         index_max_clique_global = np.array([ind_curr[i] for i in ind_max_clique_local])
+#         cliques.append(index_max_clique_global.reshape(-1))
+#         adj_curr = np.delete(adj_curr, ind_max_clique_local, 0)
+#         adj_curr = np.delete(adj_curr, ind_max_clique_local, 1)
+#         ind_curr = np.delete(ind_curr, ind_max_clique_local)
+#         if len(adj_curr) == 0:
+#             done = True
+#     return cliques
+
 def compute_minimal_clique_partition_nx(adj_mat):
     n = len(adj_mat)
 
@@ -83,7 +130,8 @@ def compute_minimal_clique_partition_nx(adj_mat):
 
 def get_iris_metrics(cliques, collision_handle):
     #seed_ellipses = [get_lj_ellipse(k) for k in cliques]
-    seed_ellipses = [Hyperellipsoid.MinimumVolumeCircumscribedEllipsoid(k.T, rank_tol = 1e-12) for k in cliques]
+    seed_ellipses2 = [Hyperellipsoid.MinimumVolumeCircumscribedEllipsoid(k.T, rank_tol = 1e-12) for k in cliques]
+    seed_ellipses = [Hyperellipsoid.MakeHypersphere(1e-4, e.center()) for e in seed_ellipses2]
     seed_points = []
     for k,se in zip(cliques, seed_ellipses):
         center = se.center()
