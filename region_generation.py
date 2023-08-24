@@ -31,6 +31,9 @@ def SNOPT_IRIS_ellipsoid(q_seeds, metrics, old_regions, region_obstacles, logger
             print("error, SNOPT IRIS FAILED")
     return regions, False
 
+
+
+
 def SNOPT_IRIS_obstacles(q_seeds, region_obstacles, old_regions, logger, plant, context, snoptiris_options, estimate_coverage, coverage_threshold):
     regions = []
     for reg_indx, q_seed in enumerate(q_seeds):

@@ -2,7 +2,7 @@ import os
 import matplotlib.pyplot as plt
 import numpy as np
 from visibility_seeding import VisSeeder
-import pickle
+import pickle, yaml
 import time
 from datetime import datetime
 import networkx as nx
@@ -138,12 +138,12 @@ class Logger:
 
 
 class CliqueApproachLogger:
-    def __init__(self, world_name, config, seed, N, eps, estimate_coverage):
+    def __init__(self, world_name, config_string, estimate_coverage, cfg_dict):
         #root = "/home/peter/git/cvisiris_examples"
         self.timings = []
         timestamp = datetime.now()
         timestamp_str = timestamp.strftime("%Y%m%d%H%M%S")
-        self.name_exp ="experiment_" +world_name+f"_{seed}_{N}_{eps:.3f}" + config + timestamp_str
+        self.name_exp ="experiment_" +world_name+f"_{cfg_dict['seed']}_{cfg_dict['N']}_{cfg_dict['eps']:.3f}" + config_string + timestamp_str
         self.expdir = root+"/logs/"+self.name_exp
         self.t_last_plot = -100
         self.nr_regions = 0
@@ -159,17 +159,25 @@ class CliqueApproachLogger:
                 f.write("summary "+self.name_exp+"\n")
                 f.write(f"-------------------------------------------\n")           
                 f.write(f"-------------------------------------------\n")           
+            
             print('logdir created')
         else:
             print('logdir exists')
-    
+        
+        with open(self.expdir+"/cfg.yaml", 'w') as f:
+                yaml.dump(cfg_dict, f)
+
     def time(self,):
         self.timings.append(time.time())
 
     def log_string(self, string):
         with open(self.summary_file, 'a') as f:
             f.write(string +'\n')
-    
+
+    def log_frac_contained_points(self, mean, min, max):
+        with open(self.summary_file, 'a') as f:
+            f.write(f"fraction cliques contained in region, mean: {mean:.3f}, min: {min:.3f}, max: {max:.3f}" +'\n')        
+
     def log_region(self, r: HPolyhedron):
         self.nr_regions +=1
         r_A = r.A() 

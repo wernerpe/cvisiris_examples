@@ -34,8 +34,41 @@ from visibility_logging import CliqueApproachLogger
 import os
 import pickle
 
+N = 500
+eps = 0.1
+approach = 0
+ap_names = ['redu', 'greedy', 'nx']
 seed = 1
+
+max_iterations_clique = 10
+extend_cliques = False
+
+require_sample_point_is_contained = True
+iteration_limit = 1
+configuration_space_margin = 1.e-4
+termination_threshold = -1
+num_collision_infeasible_samples = 10
+relative_termination_threshold = 0.02
+pts_coverage_estimator = 5000
 np.random.seed(seed) 
+
+cfg = {
+       'seed': seed,
+       'N': N,
+       'eps': eps,
+       'max_iterations_clique': max_iterations_clique,
+       'approach': approach,
+       'extend_cliques': extend_cliques,
+       'require_sample_point_is_contained':require_sample_point_is_contained,
+       'iteration_limit': iteration_limit,
+       'configuration_space_margin':configuration_space_margin,
+       'termination_threshold':termination_threshold,
+       'num_collision_infeasible_samples':num_collision_infeasible_samples,
+       'relative_termination_threshold':relative_termination_threshold,
+       'pts_coverage_estimator':pts_coverage_estimator}
+
+
+
 
 meshcat = StartMeshcat()
 builder = RobotDiagramBuilder()
@@ -106,19 +139,14 @@ def check_collision_by_ik(q0,q1,q2, min_dist=1e-5):
     return 1.*col_func_handle2(q) 
 
 snopt_iris_options = IrisOptions()
-snopt_iris_options.require_sample_point_is_contained = True
-snopt_iris_options.iteration_limit = 1
-snopt_iris_options.configuration_space_margin = 1.0e-4
-#snopt_iris_options.max_faces_per_collision_pair = 60
-snopt_iris_options.termination_threshold = -1
-#snopt_iris_options.q_star = np.zeros(3)
-snopt_iris_options.num_collision_infeasible_samples = 19
-snopt_iris_options.relative_termination_threshold = 0.02
+snopt_iris_options.require_sample_point_is_contained =require_sample_point_is_contained
+snopt_iris_options.iteration_limit =iteration_limit
+snopt_iris_options.configuration_space_margin =configuration_space_margin
+snopt_iris_options.termination_threshold =termination_threshold
+snopt_iris_options.num_collision_infeasible_samples =num_collision_infeasible_samples
+snopt_iris_options.relative_termination_threshold =relative_termination_threshold
 
-N = 500
-eps = 0.1
-approach = 0
-ap_names = ['redu', 'greedy', 'nx']
+
 
 iris_handle = partial(SNOPT_IRIS_ellipsoid, 
                       region_obstacles = [],
@@ -130,11 +158,11 @@ iris_handle = partial(SNOPT_IRIS_ellipsoid,
                       coverage_threshold = 1- eps)
 
 vgraph_handle = partial(vgraph, checker = checker, parallelize = True) 
-clogger = CliqueApproachLogger(f"3dof_flipper_",f"{ap_names[approach]}", seed = seed, N = N, eps= eps, estimate_coverage=estimate_coverage)
+clogger = CliqueApproachLogger(f"3dof_flipper_",f"{ap_names[approach]}",  estimate_coverage=estimate_coverage, cfg_dict=cfg)
 
 vcd = VisCliqueDecomp(N, 
                 eps,
-                max_iterations=100,
+                max_iterations=max_iterations_clique,
                 sample_cfree = sample_cfree,
                 col_handle= col_func_handle_,
                 build_vgraph=vgraph_handle,
@@ -263,4 +291,5 @@ plot_ellipses(meshcat, ellipses,'LJe', colors, offset=_offset_meshcat_2)
 #     if e_crit.PointInSet(r):
 #         pts_e.append(r)
 # plot_points(np.array(pts_e), size = 0.05, name = 'b')
+plot_regions(meshcat, vcd.regions, offset=_offset_meshcat_2, resolution=30)
 print('')

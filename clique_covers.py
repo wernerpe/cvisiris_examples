@@ -70,7 +70,7 @@ def find_clique_neighbors(adj_mat, clique):
     cl_mem = set([i for i in clique])
     for c in clique:
         all_nei = set([i for i in np.where(adj_mat[c,:] ==1)[0]])
-        nei.append(all_nei - all_nei&cl_mem)
+        nei.append(all_nei - (all_nei&(cl_mem -set(np.array([c])))))
     nei_clique = nei[0]
     if len(clique)>1:
         for n in nei[1:]:
@@ -81,16 +81,18 @@ def extend_cliques(adj_mat, cliques):
     extended_cliques = []
     for clique in cliques:
         idx_neighbors = find_clique_neighbors(adj_mat, clique)
+        ## there is a bug here
         if len(idx_neighbors):
             ad_nei = adj_mat[idx_neighbors,:]
             ad_nei = ad_nei[:,idx_neighbors]
-            ad_inv = 1-ad_nei
-            ad_inv = np.fill_diagonal(ad_inv, 0)
+            ad_inv = 1-1.0*ad_nei
+            np.fill_diagonal(ad_inv, 0)
             _, indx_nei_clique = solve_max_independent_set_integer(ad_inv)
-            extended_cliques.append(np.array( clique.tolist() + [idx_neighbors[i] for i in indx_nei_clique]))
+            idx_extend = [idx_neighbors[i] for i in indx_nei_clique] 
+            extended_cliques.append(np.array( clique.tolist() + idx_extend))
         else:
             extended_cliques.append(clique)
-    return extend_cliques
+    return extended_cliques
 
 # def compute_greedy_clique_partition_edge_removal(adj_mat):
 #     cliques = []
@@ -130,8 +132,7 @@ def compute_minimal_clique_partition_nx(adj_mat):
 
 def get_iris_metrics(cliques, collision_handle):
     #seed_ellipses = [get_lj_ellipse(k) for k in cliques]
-    seed_ellipses2 = [Hyperellipsoid.MinimumVolumeCircumscribedEllipsoid(k.T, rank_tol = 1e-12) for k in cliques]
-    seed_ellipses = [Hyperellipsoid.MakeHypersphere(1e-4, e.center()) for e in seed_ellipses2]
+    seed_ellipses = [Hyperellipsoid.MinimumVolumeCircumscribedEllipsoid(k.T, rank_tol = 1e-12) for k in cliques]
     seed_points = []
     for k,se in zip(cliques, seed_ellipses):
         center = se.center()

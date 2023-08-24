@@ -45,7 +45,7 @@ def solve_max_independent_set_integer(adj_mat):
 	solver_options.SetOption(CommonSolverOption.kPrintToConsole, 1)
 
 	result = Solve(prog, solver_options=solver_options)
-	return -result.get_optimal_cost(), np.nonzero(result.GetSolution(v))
+	return -result.get_optimal_cost(), np.nonzero(result.GetSolution(v))[0]
 
 # def solve_max_independent_set_integer(adjacency_matrix):
 # 	components = get_connected_components(adjacency_matrix)

@@ -251,6 +251,7 @@ def plot_regions(meshcat, regions, ellipses = None,
                      line_width = 10,
                      darken_factor = .2,
                      el_opacity = 0.3,
+                     resolution = 30,
                      offset = np.zeros(3)):
         if colors is None:
             colors = generate_maximally_different_colors(len(regions))
@@ -261,7 +262,7 @@ def plot_regions(meshcat, regions, ellipses = None,
             name = prefix + "/hpoly"
             if region.ambient_dimension() == 3:
                 plot_hpoly3d(meshcat, name, region,
-                                  c, wireframe = wireframe, resolution = 50, offset = offset)
+                                  c, wireframe = wireframe, resolution = resolution, offset = offset)
 
 def get_plot_poly_mesh(region, resolution):
 

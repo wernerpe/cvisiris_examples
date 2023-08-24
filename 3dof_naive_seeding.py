@@ -106,7 +106,7 @@ def check_collision_by_ik(q0,q1,q2, min_dist=1e-5):
 
 snopt_iris_options = IrisOptions()
 snopt_iris_options.require_sample_point_is_contained = True
-snopt_iris_options.iteration_limit = 20
+snopt_iris_options.iteration_limit = 10
 snopt_iris_options.configuration_space_margin = 1.0e-4
 #snopt_iris_options.max_faces_per_collision_pair = 60
 snopt_iris_options.termination_threshold = -1

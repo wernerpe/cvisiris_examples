@@ -1,6 +1,6 @@
 import numpy as np
 from independent_set_solver import solve_max_independent_set_integer
-from clique_covers import compute_greedy_clique_partition, get_iris_metrics,compute_minimal_clique_partition_nx, compute_cliques_REDUVCC
+from clique_covers import compute_greedy_clique_partition, get_iris_metrics,compute_minimal_clique_partition_nx, compute_cliques_REDUVCC, extend_cliques
 # from visibility_utils import shrink_regions
 # import time
 from time import strftime,gmtime
@@ -21,8 +21,12 @@ class VisCliqueDecomp:
                  iris_w_obstacles = None,
                  verbose = False,
                  logger = None,
-                 approach = 0
+                 approach = 0,
+                 extend_cliques = False,
+                 min_clique_size = 10
                  ):
+        self.min_clique_size = min_clique_size
+        self.extend_cliques = extend_cliques
         self.approach = approach
         self.logger = logger
         if self.logger is not None: self.logger.time()
@@ -70,21 +74,22 @@ class VisCliqueDecomp:
             if self.approach == 0:
                 cliques_idxs = compute_cliques_REDUVCC(ad_mat, maxtime = 30)
             elif self.approach == 1:
-                cliques_idxs = compute_greedy_clique_partition(ad_mat)
+                cliques_idxs = compute_greedy_clique_partition(ad_mat.toarray())
             elif self.approach == 2:
                 cliques_idxs = compute_minimal_clique_partition_nx(ad_mat)
-           # cliques_idxs = compute_cliques_REDUVCC(ad_mat)#compute_minimal_clique_partition_nx(ad_mat) if self.use_nx else compute_greedy_clique_partition(ad_mat) # #compute_greedy_clique_partition(ad_mat)
+            cliques_idxs_e = extend_cliques(ad_mat.toarray(), cliques_idxs) if self.extend_cliques else cliques_idxs
+            # cliques_idxs = compute_cliques_REDUVCC(ad_mat)#compute_minimal_clique_partition_nx(ad_mat) if self.use_nx else compute_greedy_clique_partition(ad_mat) # #compute_greedy_clique_partition(ad_mat)
             nr_cliques = len(cliques_idxs)
-            min_clique_size = 10
-            end_idx_cand = np.where(np.array([len(c) for c in cliques_idxs]) < min_clique_size)[0]
+
+            end_idx_cand = np.where(np.array([len(c) for c in cliques_idxs]) < self.min_clique_size)[0]
             if len(end_idx_cand):
                 end_idx = end_idx_cand[0]
             else:
                 end_idx = len(cliques_idxs)
-            self.cliques_step = np.array([points[i,:] for i in cliques_idxs[:end_idx]])
-            self.cliques.append(cliques_idxs[:end_idx])
+            self.cliques_step = np.array([points[i,:] for i in cliques_idxs_e[:end_idx]])
+            self.cliques.append(cliques_idxs_e[:end_idx])
             nr_cliques_big_enough = len(self.cliques_step)
-            #compute seed points and initial iris metrics
+            #compute seed points and initial iris metric
             self.seed_points, self.metrics, unscaled = get_iris_metrics(self.cliques_step, self.col_handle)
             self.metrics_iteration.append([Hyperellipsoid(un.A(), seed_p) for un, seed_p in zip(unscaled, self.seed_points)])
             #self.seed_points +=[points[mhs_idx, :].squeeze()]
@@ -104,7 +109,17 @@ class VisCliqueDecomp:
             self.regions += regions_step
             self.region_groups.append(regions_step)
             if self.logger is not None: self.logger.time()
+            
+            frac_cliques_in_region = []
+            for c,r in zip(self.cliques_step, regions_step):
+                size = len(c)                
+                nr_in_reg = 0
+                for p in c:
+                    if r.PointInSet(p): nr_in_reg +=1
+                frac_cliques_in_region.append(1.0*nr_in_reg/size)
+
             if self.logger is not None: self.logger.log(self, it)
+            if self.logger is not None: self.logger.log_frac_contained_points(np.mean(frac_cliques_in_region), np.min(frac_cliques_in_region), np.max(frac_cliques_in_region))
             if is_full_iris:
                 if self.logger is not None: self.logger.log_string(strftime("[%H:%M:%S] ", gmtime()) +'[VisCliqueDecomp] Coverage met, terminated on Iris step')
                 return self.regions
