@@ -74,7 +74,7 @@ class VisCliqueDecomp:
             if self.approach == 0:
                 cliques_idxs = compute_cliques_REDUVCC(ad_mat, maxtime = 30)
             elif self.approach == 1:
-                cliques_idxs = compute_greedy_clique_partition(ad_mat.toarray())
+                cliques_idxs = compute_greedy_clique_partition(ad_mat.toarray(), min_cliuqe_size=self.min_clique_size)
             elif self.approach == 2:
                 cliques_idxs = compute_minimal_clique_partition_nx(ad_mat)
             cliques_idxs_e = extend_cliques(ad_mat.toarray(), cliques_idxs) if self.extend_cliques else cliques_idxs
@@ -105,7 +105,11 @@ class VisCliqueDecomp:
             if self.logger is not None: self.logger.time()
 
             #grow the regions with obstacles
-            regions_step, is_full_iris = self.iris_w_obstacles(self.seed_points, self.metrics, self.regions)
+            regions_step, successful_seed_points, is_full_iris = self.iris_w_obstacles(self.seed_points, self.metrics, self.regions)
+            if not len(self.seed_points) == len(successful_seed_points):
+                #discard failed seed points
+                self.seed_points = [s[0] for s in successful_seed_points]
+                self.metrics = [s[1] for s in successful_seed_points]
             self.regions += regions_step
             self.region_groups.append(regions_step)
             if self.logger is not None: self.logger.time()
@@ -119,7 +123,7 @@ class VisCliqueDecomp:
                 frac_cliques_in_region.append(1.0*nr_in_reg/size)
 
             if self.logger is not None: self.logger.log(self, it)
-            if self.logger is not None: self.logger.log_frac_contained_points(np.mean(frac_cliques_in_region), np.min(frac_cliques_in_region), np.max(frac_cliques_in_region))
+            if self.logger is not None and len(regions_step): self.logger.log_frac_contained_points(np.mean(frac_cliques_in_region), np.min(frac_cliques_in_region), np.max(frac_cliques_in_region))
             if is_full_iris:
                 if self.logger is not None: self.logger.log_string(strftime("[%H:%M:%S] ", gmtime()) +'[VisCliqueDecomp] Coverage met, terminated on Iris step')
                 return self.regions

@@ -26,14 +26,14 @@ from pydrake.all import (SceneGraphCollisionChecker,
 
 from visibility_logging import CliqueApproachLogger
 from visibility_clique_decomposition import VisCliqueDecomp
-from region_generation import SNOPT_IRIS_ellipsoid
+from region_generation import SNOPT_IRIS_ellipsoid, SNOPT_IRIS_ellipsoid_parallel
 
 seed = 1
-N = 1000
-eps = 0.5
+N = 4000
+eps = 0.6
 max_iterations_clique = 10
 min_clique_size = 14
-approach = 0
+approach = 1
 ap_names = ['redu', 'greedy', 'nx']
 extend_cliques = False
 
@@ -41,7 +41,7 @@ require_sample_point_is_contained = True
 iteration_limit = 1
 configuration_space_margin = 2.e-3
 termination_threshold = -1
-num_collision_infeasible_samples = 11
+num_collision_infeasible_samples = 15
 relative_termination_threshold = 0.02
 
 pts_coverage_estimator = 5000
@@ -61,23 +61,28 @@ cfg = {'seed': seed,
        'pts_coverage_estimator':pts_coverage_estimator}
 
 np.random.seed(seed)
+def plant_builder(usemeshcat = False):
+    if usemeshcat:
+        meshcat = StartMeshcat()
+    builder = RobotDiagramBuilder()
+    plant = builder.plant()
+    scene_graph = builder.scene_graph()
+    parser = builder.parser()
+    #parser.package_map().Add("cvisirisexamples", missing directory)
+    if usemeshcat:
+        visualizer = MeshcatVisualizer.AddToBuilder(builder.builder(), scene_graph, meshcat)
+    directives_file = "7_dof_directives.yaml"#FindResourceOrThrow() 
+    directives = LoadModelDirectives(directives_file)
+    models = ProcessModelDirectives(directives, plant, parser)
+    plant.Finalize()
+    diagram = builder.Build()
+    diagram_context = diagram.CreateDefaultContext()
+    plant_context = plant.GetMyContextFromRoot(diagram_context)
+    diagram.ForcedPublish(diagram_context)
+    return plant, scene_graph, diagram, diagram_context, plant_context, meshcat if usemeshcat else None
 
-meshcat = StartMeshcat()
-builder = RobotDiagramBuilder()
-plant = builder.plant()
-scene_graph = builder.scene_graph()
-parser = builder.parser()
-#parser.package_map().Add("cvisirisexamples", missing directory)
+plant, scene_graph, diagram, diagram_context, plant_context, meshcat = plant_builder(usemeshcat=True)
 
-visualizer = MeshcatVisualizer.AddToBuilder(builder.builder(), scene_graph, meshcat)
-directives_file = "7_dof_directives.yaml"#FindResourceOrThrow() 
-directives = LoadModelDirectives(directives_file)
-models = ProcessModelDirectives(directives, plant, parser)
-plant.Finalize()
-diagram = builder.Build()
-diagram_context = diagram.CreateDefaultContext()
-plant_context = plant.GetMyContextFromRoot(diagram_context)
-diagram.ForcedPublish(diagram_context)
 scene_graph_context = scene_graph.GetMyMutableContextFromRoot(
     diagram_context)
 robot_instances = [plant.GetModelInstanceByName("iiwa"), plant.GetModelInstanceByName("wsg")]
@@ -110,11 +115,19 @@ snopt_iris_options.relative_termination_threshold = relative_termination_thresho
 
 vgraph_handle = partial(vgraph, checker = checker, parallelize = True) 
 clogger = CliqueApproachLogger(f"7dof_iiwa_",f"{ap_names[approach]}", estimate_coverage=estimate_coverage, cfg_dict=cfg)
-iris_handle = partial(SNOPT_IRIS_ellipsoid, 
+# iris_handle = partial(SNOPT_IRIS_ellipsoid, 
+#                       region_obstacles = [],
+#                       logger = clogger, 
+#                       plant = plant, 
+#                       context = diagram_context,
+#                       snoptiris_options = snopt_iris_options,
+#                       estimate_coverage = estimate_coverage,
+#                       coverage_threshold = 1- eps)
+
+iris_handle = partial(SNOPT_IRIS_ellipsoid_parallel,
                       region_obstacles = [],
                       logger = clogger, 
-                      plant = plant, 
-                      context = diagram_context,
+                      plant_builder = plant_builder,
                       snoptiris_options = snopt_iris_options,
                       estimate_coverage = estimate_coverage,
                       coverage_threshold = 1- eps)

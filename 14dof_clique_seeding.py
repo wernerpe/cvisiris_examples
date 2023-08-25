@@ -1,51 +1,48 @@
-#from pydrake.all import RationalForwardKinematics
-from pydrake.geometry.optimization import IrisOptions#, HPolyhedron, Hyperellipsoid
-from pydrake.solvers import MosekSolver, CommonSolverOption, SolverOptions
-# from pydrake.all import (PiecewisePolynomial, 
-#                          InverseKinematics, 
-#                          Sphere, 
-#                          Rgba, 
-#                          RigidTransform, 
-#                          RotationMatrix, 
-#                          IrisInConfigurationSpace)
-#import time
-#import pydrake
-from ur3e_demo import UrDiagram, SetDiffuse
-import visualization_utils as viz_utils
-from functools import partial
-import numpy as np
+from pydrake.all import (
+                        StartMeshcat,
+                        LoadModelDirectives,
+                        ProcessModelDirectives,
+                        MeshcatVisualizerParams,
+                        MeshcatVisualizer,
+                        SceneGraphCollisionChecker,
+                        Role,
+                        RobotDiagramBuilder,
+                        IrisOptions,
+                        )
 from visibility_utils import (get_col_func, 
                               get_sample_cfree_handle,
                               get_coverage_estimator,
                               vgraph)
-from pydrake.all import SceneGraphCollisionChecker
+import numpy as np
+import os
+from functools import partial
+
 from visibility_logging import CliqueApproachLogger
 from visibility_clique_decomposition import VisCliqueDecomp
 from region_generation import SNOPT_IRIS_ellipsoid, SNOPT_IRIS_ellipsoid_parallel
 
-add_shelf = True
 seed = 1
 N = 4000
-eps = 0.2
+eps = 0.6
 max_iterations_clique = 10
-min_clique_size = 14
-approach = 1
+min_clique_size = 40
+approach = 0
 ap_names = ['redu', 'greedy', 'nx']
 extend_cliques = False
 
 require_sample_point_is_contained = True
 iteration_limit = 1
-configuration_space_margin = 1.e-3
+configuration_space_margin = 2.e-3
 termination_threshold = -1
-num_collision_infeasible_samples = 25
+num_collision_infeasible_samples = 15
 relative_termination_threshold = 0.02
 
 pts_coverage_estimator = 5000
-cfg = {'add_shelf': add_shelf,
-       'seed': seed,
+cfg = {'seed': seed,
        'N': N,
        'eps': eps,
        'max_iterations_clique': max_iterations_clique,
+       'min_clique_size': min_clique_size,
        'approach': approach,
        'extend_cliques': extend_cliques,
        'require_sample_point_is_contained':require_sample_point_is_contained,
@@ -57,27 +54,52 @@ cfg = {'add_shelf': add_shelf,
        'pts_coverage_estimator':pts_coverage_estimator}
 
 np.random.seed(seed)
+def plant_builder(usemeshcat = False):
+    builder = RobotDiagramBuilder()
+    if usemeshcat: meshcat = StartMeshcat()
+    # if export_sg_input:
+    #     scene_graph = builder.AddSystem(SceneGraph())
+    #     plant = MultibodyPlant(time_step=0.0)
+    #     plant.RegisterAsSourceForSceneGraph(scene_graph)
+    #     builder.ExportInput(scene_graph.get_source_pose_port(plant.get_source_id()), "source_pose")
+    # else:
+    plant = builder.plant()
+    scene_graph = builder.scene_graph()# AddMultibodyPlantSceneGraph(builder, time_step=0.0)
 
-def plant_builder(use_meshcat = False):
-    ur = UrDiagram(num_ur = 1, weld_wrist = True, add_shelf = add_shelf,
-                    add_gripper = True, use_meshcat=use_meshcat)
+    parser = builder.parser()
+    parser.package_map().Add("bimanual", os.path.dirname(os.path.dirname(os.path.realpath(__file__)))+"/cvisiris_examples/assets_bimanual")
 
-    if use_meshcat: meshcat = ur.meshcat
-    plant = ur.plant
-    diagram_context = ur.diagram.CreateDefaultContext()
-    ur.diagram.ForcedPublish(diagram_context)
-    diagram = ur.diagram
-    plant_context = ur.plant.GetMyMutableContextFromRoot(
-            diagram_context)
-    # scene_graph_context = ur.scene_graph.GetMyMutableContextFromRoot(
-    #     diagram_context)
-    scene_graph = ur.scene_graph
-    return plant, scene_graph, diagram, diagram_context, plant_context, meshcat if use_meshcat else None
+    directives = LoadModelDirectives("assets_bimanual/models/bimanual_iiwa_with_shelves.yaml")
+    models = ProcessModelDirectives(directives, plant, parser)
 
-plant, scene_graph, diagram, diagram_context, plant_context, meshcat = plant_builder(True)
+    plant.Finalize()
+    if usemeshcat:
+        meshcat_visual_params = MeshcatVisualizerParams()
+        meshcat_visual_params.delete_on_initialization_event = False
+        meshcat_visual_params.role = Role.kIllustration
+        meshcat_visual_params.prefix = "visual"
+        meshcat_visual = MeshcatVisualizer.AddToBuilder(
+            builder.builder(), scene_graph, meshcat, meshcat_visual_params)
+
+        meshcat_collision_params = MeshcatVisualizerParams()
+        meshcat_collision_params.delete_on_initialization_event = False
+        meshcat_collision_params.role = Role.kProximity
+        meshcat_collision_params.prefix = "collision"
+        meshcat_collision_params.visible_by_default = False
+        meshcat_collision = MeshcatVisualizer.AddToBuilder(
+            builder.builder(), scene_graph, meshcat, meshcat_collision_params)
 
 
-robot_instances = [plant.GetModelInstanceByName("ur0"), plant.GetModelInstanceByName("schunk0")]
+    diagram = builder.Build()
+    diagram_context = diagram.CreateDefaultContext()
+    plant_context = plant.GetMyContextFromRoot(diagram_context)
+    diagram.ForcedPublish(diagram_context)
+    scene_graph_context = scene_graph.GetMyMutableContextFromRoot(
+        diagram_context)
+    return plant, scene_graph, diagram, diagram_context, plant_context, meshcat if usemeshcat else None
+
+plant, scene_graph, diagram, diagram_context, plant_context, meshcat = plant_builder(usemeshcat=True)
+robot_instances = [plant.GetModelInstanceByName("iiwa_left"), plant.GetModelInstanceByName("iiwa_right"), plant.GetModelInstanceByName("wsg_left"), plant.GetModelInstanceByName("wsg_right")]
 
 checker = SceneGraphCollisionChecker(model = diagram.Clone(), 
                 robot_model_instances = robot_instances,
@@ -106,7 +128,7 @@ snopt_iris_options.relative_termination_threshold = relative_termination_thresho
 
 
 vgraph_handle = partial(vgraph, checker = checker, parallelize = True) 
-clogger = CliqueApproachLogger(f"5dof_ur_{'shelf' if add_shelf else 'noshelf'}",f"{ap_names[approach]}", estimate_coverage=estimate_coverage, cfg_dict=cfg)
+clogger = CliqueApproachLogger(f"14dof_iiwa_",f"{ap_names[approach]}", estimate_coverage=estimate_coverage, cfg_dict=cfg)
 # iris_handle = partial(SNOPT_IRIS_ellipsoid, 
 #                       region_obstacles = [],
 #                       logger = clogger, 
@@ -123,6 +145,7 @@ iris_handle = partial(SNOPT_IRIS_ellipsoid_parallel,
                       snoptiris_options = snopt_iris_options,
                       estimate_coverage = estimate_coverage,
                       coverage_threshold = 1- eps)
+
 vcd = VisCliqueDecomp(N, 
                 eps,
                 max_iterations=max_iterations_clique,
@@ -133,9 +156,8 @@ vcd = VisCliqueDecomp(N,
                 verbose = True,
                 logger=clogger,
                 approach=approach,
-                extend_cliques=extend_cliques
+                extend_cliques=extend_cliques,
+                min_clique_size = min_clique_size
                 )
 regs = vcd.run()
-
-
-print('ha')
+print('ready')

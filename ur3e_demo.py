@@ -39,8 +39,8 @@ class UrDiagram:
     gripper_instances: typing.List[ModelInstanceIndex]
 
     def __init__(self, num_ur: int, weld_wrist: bool, add_shelf: bool,
-                 add_gripper: bool):
-        self.meshcat = StartMeshcat()
+                 add_gripper: bool, use_meshcat: bool = False):
+        if use_meshcat: self.meshcat = StartMeshcat()
         # builder = DiagramBuilder()
         # self.plant, self.scene_graph = AddMultibodyPlantSceneGraph(
         #     builder, 0.0)
@@ -181,15 +181,15 @@ class UrDiagram:
                                    inspector.GetName(body_geometry),
                                    np.array([0.5, 0.5, 0.5, 1]),
                                    scene_graph_context=None)
-
-        meshcat_params = MeshcatVisualizerParams()
-        meshcat_params.role = Role.kIllustration
-        self.visualizer = MeshcatVisualizer.AddToBuilder(
-            self.robotdiagrambuilder.builder(), self.scene_graph, self.meshcat, meshcat_params)
-        self.meshcat.SetProperty("/Background", "top_color", [0.8, 0.8, 0.6])
-        self.meshcat.SetProperty("/Background", "bottom_color",
-                                 [0.9, 0.9, 0.9])
-        print(self.meshcat.web_url())
+        if use_meshcat:
+            meshcat_params = MeshcatVisualizerParams()
+            meshcat_params.role = Role.kIllustration
+            self.visualizer = MeshcatVisualizer.AddToBuilder(
+                self.robotdiagrambuilder.builder(), self.scene_graph, self.meshcat, meshcat_params)
+            self.meshcat.SetProperty("/Background", "top_color", [0.8, 0.8, 0.6])
+            self.meshcat.SetProperty("/Background", "bottom_color",
+                                    [0.9, 0.9, 0.9])
+            print(self.meshcat.web_url())
         self.diagram = self.robotdiagrambuilder.Build()
 
 
