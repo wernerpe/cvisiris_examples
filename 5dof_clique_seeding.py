@@ -25,9 +25,9 @@ from region_generation import SNOPT_IRIS_ellipsoid, SNOPT_IRIS_ellipsoid_paralle
 
 add_shelf = True
 seed = 1
-N = 4000
-eps = 0.2
-max_iterations_clique = 10
+N = 1000
+eps = 0.1
+max_iterations_clique = 15
 min_clique_size = 14
 approach = 1
 ap_names = ['redu', 'greedy', 'nx']
@@ -37,7 +37,7 @@ require_sample_point_is_contained = True
 iteration_limit = 1
 configuration_space_margin = 1.e-3
 termination_threshold = -1
-num_collision_infeasible_samples = 25
+num_collision_infeasible_samples = 19
 relative_termination_threshold = 0.02
 
 pts_coverage_estimator = 5000

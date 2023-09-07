@@ -35,11 +35,16 @@ from pydrake.all import InverseKinematics
 from functools import partial
 
 def eval_cons(q, c, tol):
-    return 1-1*float(c.evaluator().CheckSatisfied(q, tol))
+    try:
+        res = 1-1*float(c.evaluator().CheckSatisfied(q, tol)) 
+    except:
+        print("COLFUNC HANDLE GJKERROR")
+        res = 1        
+    return res
 
-def get_col_func(plant, plant_context, min_dist = 0.01, tol = 0.01):
+def get_col_func(plant, plant_context, min_dist = 0.01, tol = 0.001):
     ik = InverseKinematics(plant, plant_context)
-    collision_constraint = ik.AddMinimumDistanceConstraint(min_dist, 0.001)
+    collision_constraint = ik.AddMinimumDistanceConstraint(min_dist, 0.00001)
     return partial(eval_cons, c=collision_constraint, tol=tol)
 
 def sample_cfree(N, M, regions, q_min, q_diff, dim, col_func_handle):

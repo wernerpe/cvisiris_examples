@@ -178,15 +178,24 @@ class CliqueApproachLogger:
         with open(self.summary_file, 'a') as f:
             f.write(f"fraction cliques contained in region, mean: {mean:.3f}, min: {min:.3f}, max: {max:.3f}" +'\n')        
 
-    def log_region(self, r: HPolyhedron):
+    def log_region(self, r):
         self.nr_regions +=1
         r_A = r.A() 
         r_b = r.b()
         data = {'ra': r_A, 'rb': r_b}
         with open(self.expdir+f"/regions/region_{self.nr_regions}"+".pkl", 'wb') as f:
             pickle.dump(data,f)
+    
+    def log_region_anon(self, r_A, r_b):
+        #self.nr_regions +=1
+        # r_A = r.A() 
+        # r_b = r.b()
+        data = {'ra': r_A, 'rb': r_b}
 
-    def log(self, vs: VisCliqueDecomp, iteration):
+        with open(self.expdir+f"/regions/region_{np.random.rand():3.f}"+".pkl", 'wb') as f:
+            pickle.dump(data,f)
+
+    def log(self, vs, iteration):
         #self.timings.append(time.time())
         t_sample = self.timings[-4] - self.timings[-5] 
         t_visgraph = self.timings[-3] - self.timings[-4] 

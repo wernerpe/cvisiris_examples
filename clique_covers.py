@@ -65,6 +65,36 @@ def compute_greedy_clique_partition(adj_mat, min_cliuqe_size):
             done = True
     return cliques
 
+def compute_greedy_clique_edge_cover(adj_mat, min_cliuqe_size):
+    cliques = []
+    done = False
+    adj_curr = adj_mat.copy()
+    adj_curr = 1- adj_curr
+    np.fill_diagonal(adj_curr, 0)
+    ind_curr = np.arange(len(adj_curr))
+    #we compute a weighted max independent set, with the weigths
+
+    #failure case max independent set = max nr edges -> only adding m^2 - previously covered edges, 
+    # need to subtract already covered edges from cost function? yes! but how
+    # cost = -m(m-1)/2 - covered edges vi*vj*weight
+    # naive implementation keeps the size of the program constant and 
+    # marks off all edges covered by previous cliques in a upper triagular matrix
+    # a better implementation will remove vertices from the program if all its outgoing edges have been covered
+    
+
+    while not done:
+        val, ind_max_clique_local = solve_max_independent_set_integer(adj_curr) #solve_max_independet_set_KAMIS(adj_curr, maxtime = 5) #
+        #non_max_ind_local = np.arange(len(adj_curr))
+        #non_max_ind_local = np.delete(non_max_ind_local, ind_max_clique_local, None)
+        index_max_clique_global = np.array([ind_curr[i] for i in ind_max_clique_local])
+        cliques.append(index_max_clique_global.reshape(-1))
+        adj_curr = np.delete(adj_curr, ind_max_clique_local, 0)
+        adj_curr = np.delete(adj_curr, ind_max_clique_local, 1)
+        ind_curr = np.delete(ind_curr, ind_max_clique_local)
+        if len(adj_curr) == 0 or len(cliques[-1])<min_cliuqe_size:
+            done = True
+    return cliques
+
 def find_clique_neighbors(adj_mat, clique):
     nei = []
     cl_mem = set([i for i in clique])

@@ -1,6 +1,7 @@
 from pydrake.geometry.optimization import IrisInConfigurationSpace, IrisOptions
 import multiprocessing as mp
 from functools import partial
+import pickle
 
 def SNOPT_IRIS_ellipsoid(q_seeds, metrics, old_regions, region_obstacles, logger, plant, context, snoptiris_options, estimate_coverage, coverage_threshold):
     regions = []
@@ -42,7 +43,7 @@ def SNOPT_IRIS_ellipsoid_worker(q_seeds_and_metrics,
                                 termination_threshold,
                                 num_collision_infeasible_samples,
                                 relative_termination_threshold,
-                                #region_logging_handle,
+                                logdir,
                                 plant_builder):
     plant, scene_graph, diagram, diagram_context, plant_context, meshcat = plant_builder()
     default_b = np.concatenate((plant.GetPositionLowerLimits(), -plant.GetPositionUpperLimits()), axis =0) 
@@ -73,7 +74,10 @@ def SNOPT_IRIS_ellipsoid_worker(q_seeds_and_metrics,
                 print(f"[SNOPT IRIS Worker]: Region:{reg_indx} / {len(q_seeds)}")
                 regions.append(r_red)
                 successful_seed_ells.append([q_seed, metric])
-                #region_logging_handle(r_red)
+                data = {'ra': r_red.A(), 'rb': r_red.b()}
+
+                with open(logdir+f"/regions/region_{np.random.rand():.3f}"+".pkl", 'wb') as f:
+                    pickle.dump(data,f)
         except:
             print(f"[SNOPT IRIS Worker] Region failed at {q_seed}")
     return regions, successful_seed_ells
@@ -107,7 +111,7 @@ def SNOPT_IRIS_ellipsoid_parallel(q_seeds,
                               termination_threshold = snoptiris_options.termination_threshold,
                               num_collision_infeasible_samples = snoptiris_options.num_collision_infeasible_samples,
                               relative_termination_threshold = snoptiris_options.relative_termination_threshold,
-                              #region_logging_handle = logger.log_region,
+                              logdir = logger.expdir,
                               plant_builder = plant_builder)
 
     pool = mp.Pool(processes= split)

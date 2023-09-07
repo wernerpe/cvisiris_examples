@@ -59,7 +59,6 @@ def solve_max_independent_set_integer(adj_mat):
 	result = Solve(prog, solver_options=solver_options)
 	return -result.get_optimal_cost(), np.nonzero(result.GetSolution(v))[0]
 
-
 def solve_max_independet_set_KAMIS(adj_mat, maxtime=20):
     if not isinstance(adj_mat, np.ndarray):
         #nx behaves wierdly with sparse arrays

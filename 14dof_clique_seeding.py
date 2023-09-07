@@ -105,7 +105,7 @@ checker = SceneGraphCollisionChecker(model = diagram.Clone(),
                 robot_model_instances = robot_instances,
                 distance_function_weights =  [1] * plant.num_positions(),
                 #configuration_distance_function = _configuration_distance,
-                edge_step_size = 0.125)
+                edge_step_size = 0.2)
 
 scaler = 1 #np.array([0.8, 1., 0.8, 1, 0.8, 1, 0.8]) 
 q_min = plant.GetPositionLowerLimits()*scaler
