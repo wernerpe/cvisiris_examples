@@ -1,0 +1,51 @@
+# -*- python -*-
+# This file contains rules for Bazel; see drake/doc/bazel.rst.
+
+load(
+    "@drake//tools/skylark:drake_cc.bzl",
+    "drake_cc_binary",
+    "drake_cc_googletest",
+    "drake_cc_library",
+    "drake_cc_package_library",
+)
+load("//tools/jupyter:jupyter_py.bzl", "drake_jupyter_py_binary")
+load(
+    "//tools/skylark:drake_py.bzl",
+    "drake_py_library",
+    "drake_py_unittest",
+)
+
+load(
+    "@drake//tools/skylark:drake_py.bzl",
+    "drake_py_binary",
+)
+
+filegroup(
+    name = "models",
+    srcs = glob(
+        [
+            "models/**",
+        ],
+        exclude = [
+            "**/*.sha512",
+        ],
+    ),
+    data = glob(["assets/**","assets_bimanual/**"]),
+    visibility = ["//visibility:public"],
+)
+
+##########################################################
+# NOTEBOOKS
+##########################################################
+
+drake_jupyter_py_binary(
+    name = "7dof_env_vis",
+    add_test_rule = 0,
+    data = [
+        "//cvisiris_examples:models",
+    ],
+    deps = [
+        "//C_Iris_Examples:sampling_based_motion_planners",
+        "//bindings/pydrake",
+    ],
+)
