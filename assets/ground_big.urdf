@@ -3,7 +3,7 @@
 <robot name="ground">
   
   <material name="li">
-    <color rgba="1.0 1.0 1.0 0.5"/>
+    <color rgba="0.2 0.2 0.2 1.0"/>
   </material>
 
   <link name="base"/>
@@ -12,13 +12,13 @@
     <collision>
        <origin xyz="0 0 .0" rpy="0 0 0"/>
       <geometry>
-        <box size="1.2 0.1 1.8"/>
+        <box size="4.0 0.1 4.0"/>
       </geometry>
     </collision>
     <visual>
       <origin xyz="0 0 .0" rpy="0 0 0"/>
       <geometry>
-        <box size="1.2 0.1 1.8"/>
+        <box size="4.0 0.1 4.0"/>
       </geometry>
       <material name="li"/>
     </visual>

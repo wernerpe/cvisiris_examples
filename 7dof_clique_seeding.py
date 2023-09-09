@@ -29,10 +29,10 @@ from visibility_clique_decomposition import VisCliqueDecomp
 from region_generation import SNOPT_IRIS_ellipsoid, SNOPT_IRIS_ellipsoid_parallel
 
 seed = 1
-N = 4000
-eps = 0.6
+N = 1500
+eps = 0.2
 max_iterations_clique = 10
-min_clique_size = 14
+min_clique_size = 20
 approach = 1
 ap_names = ['redu', 'greedy', 'nx']
 extend_cliques = False
@@ -71,7 +71,7 @@ def plant_builder(usemeshcat = False):
     #parser.package_map().Add("cvisirisexamples", missing directory)
     if usemeshcat:
         visualizer = MeshcatVisualizer.AddToBuilder(builder.builder(), scene_graph, meshcat)
-    directives_file = "7_dof_directives.yaml"#FindResourceOrThrow() 
+    directives_file = "7_dof_directives_newshelf.yaml"#FindResourceOrThrow() 
     directives = LoadModelDirectives(directives_file)
     models = ProcessModelDirectives(directives, plant, parser)
     plant.Finalize()
