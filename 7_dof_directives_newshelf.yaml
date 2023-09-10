@@ -14,8 +14,9 @@ directives:
 # Add schunk
 - add_model:
     name: wsg
-    #file: package://drake/sandbox/schunk_wsg_50_welded_fingers.sdf
-    file: package://drake/cvisiris_examples/assets/models/wsg_50_description/sdf/schunk_wsg_50_welded_fingers.sdf
+#    file: package://drake/sandbox/schunk_wsg_50_welded_fingers.sdf
+    file: package://drake/cvisiris_examples/assets/models/wsg_50_description/sdf/schunk_wsg_50_welded_fingers_box_geom.sdf
+#    file: package://drake/cvisiris_examples/assets/models/wsg_50_description/sdf/schunk_wsg_50_welded_fingers.sdf
 
 - add_frame:
     name: iiwa::wsg_attach

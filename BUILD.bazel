@@ -24,13 +24,16 @@ filegroup(
     name = "models",
     srcs = glob(
         [
-            "models/**",
+            "manipulation/models/wsg_50_description/**",
         ],
         exclude = [
             "**/*.sha512",
         ],
     ),
-    data = glob(["assets/**","assets_bimanual/**"]),
+    data = glob(["assets/**",
+                 "assets/**",
+                 "assets/**/**"],
+                 exclude_directories = 0),
     visibility = ["//visibility:public"],
 )
 

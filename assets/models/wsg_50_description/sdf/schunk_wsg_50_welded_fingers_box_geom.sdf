@@ -28,10 +28,17 @@
           <emissive>0 0 0 1</emissive>
         </material>
       </visual>
+<!--      <collision name="collision">-->
+<!--        <geometry>-->
+<!--          <box>-->
+<!--            <size>0.146 0.0725 0.05</size>-->
+<!--          </box>-->
+<!--        </geometry>-->
+<!--      </collision>-->
       <collision name="collision">
         <geometry>
           <box>
-            <size>0.146 0.0725 0.05</size>
+            <size>0.146 0.20 0.05</size>
           </box>
         </geometry>
       </collision>
@@ -65,13 +72,13 @@
           <emissive>0 0 0 1</emissive>
         </material>
       </visual>
-      <collision name="collision">
-        <geometry>
-          <box>
-            <size>0.012 0.082 0.02</size>
-          </box>
-        </geometry>
-      </collision>
+<!--      <collision name="collision">-->
+<!--        <geometry>-->
+<!--          <box>-->
+<!--            <size>0.012 0.082 0.02</size>-->
+<!--          </box>-->
+<!--        </geometry>-->
+<!--      </collision>-->
     </link>
     <link name="right_finger">
       <pose>0.06 0.028 0 0 0 0</pose>
@@ -99,13 +106,13 @@
           <emissive>0 0 0 1</emissive>
         </material>
       </visual>
-      <collision name="collision">
-        <geometry>
-          <box>
-            <size>0.012 0.082 0.02</size>
-          </box>
-        </geometry>
-      </collision>
+<!--      <collision name="collision">-->
+<!--        <geometry>-->
+<!--          <box>-->
+<!--            <size>0.012 0.082 0.02</size>-->
+<!--          </box>-->
+<!--        </geometry>-->
+<!--      </collision>-->
     </link>
     <joint name="left_finger_sliding_joint" type="fixed">
       <parent>body</parent>
