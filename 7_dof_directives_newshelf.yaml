@@ -30,19 +30,19 @@ directives:
     child: wsg::body
 
 # Add shelves
-- add_model:
-    name: shelves1
-    file: package://drake/cvisiris_examples/assets/shelves_big.sdf
-
-- add_frame:
-    name: shelf1_origin
-    X_PF:
-      base_frame: world
-      translation: [-0.5, 0.45, 0.0]
-
-- add_weld:
-    parent: shelf1_origin
-    child: shelves1::bottom
+#- add_model:
+#    name: shelves1
+#    file: package://drake/cvisiris_examples/assets/shelves_big.sdf
+#
+#- add_frame:
+#    name: shelf1_origin
+#    X_PF:
+#      base_frame: world
+#      translation: [-0.5, 0.45, 0.0]
+#
+#- add_weld:
+#    parent: shelf1_origin
+#    child: shelves1::bottom
 
 # Add shelves
 - add_model:
@@ -59,6 +59,8 @@ directives:
     parent: shelf2_origin
     child: shelves2::bottom
 
+
+### UNCOMMMENT ABOVE THIS
 # # Add shelves
 # - add_model:
 #     name: shelves3
