@@ -41,7 +41,7 @@ from pydrake.all import (SceneGraphCollisionChecker,
 
 
 # seed = 1
-for seed in [29]:
+for seed in [50]:
     np.random.seed(seed)
     def plant_builder(usemeshcat = False):
         if usemeshcat:
@@ -92,7 +92,7 @@ for seed in [29]:
     #snopt_iris_options.max_faces_per_collision_pair = 60
     snopt_iris_options.termination_threshold = -1
     #snopt_iris_options.q_star = np.zeros(3)
-    snopt_iris_options.num_collision_infeasible_samples = 19
+    snopt_iris_options.num_collision_infeasible_samples = 15
     snopt_iris_options.relative_termination_threshold = 0.02
 
 
@@ -126,7 +126,7 @@ for seed in [29]:
         return adj_mat#.toarray()
 
     N = 1
-    eps = 0.25
+    eps = 0.3
     alpha = 0.05 #not used in current forumlation
 
     logger = Logger(f"7dof_iiwa_naive_", seed, N, alpha, eps, estimate_coverage)

@@ -116,6 +116,7 @@ def plot_polytope(polytope, meshcat_instance, name,
                      wireframe=wireframe)
 
 
+
 def plot_hpoly2d(polytope, meshcat_instance, name,
                  color,
                  line_width=8,
@@ -261,7 +262,9 @@ def plot_regions(meshcat, regions, ellipses = None,
             prefix = f"/iris/regions{region_suffix}/{i}"
             name = prefix + "/hpoly"
             if region.ambient_dimension() == 3:
-                plot_hpoly3d(meshcat, name, region,
+                # plot_hpoly3d(meshcat, name, region,
+                #                   c, wireframe = wireframe, resolution = resolution, offset = offset)
+                plot_hpoly3d_2(meshcat, name, region,
                                   c, wireframe = wireframe, resolution = resolution, offset = offset)
 
 def get_plot_poly_mesh(region, resolution):
@@ -290,6 +293,25 @@ def plot_hpoly3d(meshcat, name, hpoly, color, wireframe = True, resolution = 30,
                                                    resolution=resolution)
         meshcat.SetObject(name, TriangleSurfaceMesh(triangles, verts+offset.reshape(-1,3)),
                                 color, wireframe=wireframe)
+        
+def plot_hpoly3d_2(meshcat, name, hpoly, color, wireframe = True, resolution = -1, offset = np.zeros(3)):
+        verts = VPolytope(hpoly).vertices().T
+        hull = ConvexHull(verts)
+        triangles = []
+        for s in hull.simplices:
+            triangles.append(s)
+        tri_drake = [SurfaceTriangle(*t) for t in triangles]
+        # obj = self[name]
+        # objwf = self[name+'wf']
+        # col = to_hex(color)
+        #material = MeshLambertMaterial(color=col, opacity=opacity)
+        meshcat.SetObject(name, TriangleSurfaceMesh(tri_drake, verts+offset.reshape(-1,3)),
+                                color, wireframe=False)
+        meshcat.SetObject(name+'wf', TriangleSurfaceMesh(tri_drake, verts+offset.reshape(-1,3)),
+                                color, wireframe=True)
+        # #obj.set_object(TriangularMeshGeometry(verts, triangles), material)
+        # material = MeshLambertMaterial(color=col, opacity=0.95, wireframe=True)
+        # objwf.set_object(TriangularMeshGeometry(verts, triangles), material)
 
 def plot_ellipses(meshcat, ellipses, name, colors, offset = None):
     for i, e in enumerate(ellipses):

@@ -36,8 +36,8 @@ import pickle
 
 N = 500
 eps = 0.1
-approach = 1
-ap_names = ['redu', 'greedy', 'nx']
+approach = 3
+ap_names = ['redu', 'greedy', 'nx', 'cvx_hull']
 seed = 1
 
 max_iterations_clique = 10
@@ -47,7 +47,7 @@ require_sample_point_is_contained = True
 iteration_limit = 1
 configuration_space_margin = 1.e-4
 termination_threshold = -1
-num_collision_infeasible_samples = 10
+num_collision_infeasible_samples = 19
 relative_termination_threshold = 0.02
 pts_coverage_estimator = 5000
 for seed in range(10):
@@ -159,7 +159,7 @@ for seed in range(10):
                         coverage_threshold = 1- eps)
 
     vgraph_handle = partial(vgraph, checker = checker, parallelize = True) 
-    clogger = CliqueApproachLogger(f"3dof_flipper_",f"{ap_names[approach]}",  estimate_coverage=estimate_coverage, cfg_dict=cfg)
+    clogger = CliqueApproachLogger(f"3dof_flipper2_",f"{ap_names[approach]}",  estimate_coverage=estimate_coverage, cfg_dict=cfg)
 
     vcd = VisCliqueDecomp(N, 
                     eps,
@@ -173,7 +173,6 @@ for seed in range(10):
                     approach=approach
                     )
     regs = vcd.run()
-
 exit()
 def plot_collision_constraint(N = 50, q_min = q_min, q_max= q_max):
     if f"col_cons{N}.pkl" in os.listdir('tmp'):
