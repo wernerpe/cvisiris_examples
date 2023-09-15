@@ -52,3 +52,31 @@ drake_jupyter_py_binary(
         "//bindings/pydrake",
     ],
 )
+
+drake_jupyter_py_binary(
+    name = "14dof_env_vis",
+    add_test_rule = 0,
+    data = [
+        "//cvisiris_examples:models",
+    ],
+    deps = [
+        "//C_Iris_Examples:sampling_based_motion_planners",
+        "//C_Iris_Examples:visualization_utils",
+        "//C_Iris_Examples:iris_plant_visualizer",
+        "//bindings/pydrake",
+    ],
+)
+
+drake_jupyter_py_binary(
+    name = "14dof_env_vis2",
+    add_test_rule = 0,
+    data = [
+        "//cvisiris_examples:models",
+    ],
+    deps = [
+        "//C_Iris_Examples:sampling_based_motion_planners",
+        "//C_Iris_Examples:visualization_utils",
+        "//C_Iris_Examples:iris_plant_visualizer",
+        "//bindings/pydrake",
+    ],
+)
