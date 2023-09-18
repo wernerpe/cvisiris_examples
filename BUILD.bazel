@@ -54,6 +54,19 @@ drake_jupyter_py_binary(
 )
 
 drake_jupyter_py_binary(
+    name = "7dof_env_traj_playback",
+    add_test_rule = 0,
+    data = [
+        "//cvisiris_examples:models",
+    ],
+    deps = [
+        "//C_Iris_Examples:sampling_based_motion_planners",
+        "//bindings/pydrake",
+    ],
+)
+
+
+drake_jupyter_py_binary(
     name = "14dof_env_vis",
     add_test_rule = 0,
     data = [
