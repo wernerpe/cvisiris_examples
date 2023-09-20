@@ -1,0 +1,34 @@
+# Model directive for planar iiwa with simple collision and welded gripper
+
+directives:
+
+# Add shelves
+- add_model:
+    name: shelves1
+    file: package://drake/cvisiris_examples/assets/shelves_big.sdf
+    default_free_body_pose:
+      bottom:
+        translation: [-0.5, 0.45, 0.0]
+
+# Add shelves
+- add_model:
+    name: shelves2
+    file: package://drake/cvisiris_examples/assets/shelves_big.sdf
+    default_free_body_pose:
+      bottom:
+        translation: [-0.5, -0.45, 0.0]
+
+# Add ground
+- add_model:
+    name: ground
+    file: package://drake/cvisiris_examples/assets/ground_big.urdf
+
+- add_frame:
+    name: ground_origin
+    X_PF:
+      base_frame: world
+      translation: [0.0 ,0 , -0.05]
+
+- add_weld:
+    parent: ground_origin
+    child: ground::base

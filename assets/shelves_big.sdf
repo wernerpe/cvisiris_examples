@@ -21,6 +21,9 @@
                     </box>
                 </geometry>
             </collision>
+            <inertial>
+        <mass>1.000</mass>
+      </inertial>
         </link>
         <link name="top">
             <visual name="top">
@@ -42,6 +45,9 @@
                     </box>
                 </geometry>
             </collision>
+            <inertial>
+        <mass>1.000</mass>
+      </inertial>
         </link>
         <joint name="top_bottom_joint" type="fixed">
             <child>top</child>
@@ -67,6 +73,9 @@
                     </box>
                 </geometry>
             </collision>
+            <inertial>
+        <mass>1.000</mass>
+      </inertial>
         </link>
         <joint name="right_bottom_joint" type="fixed">
             <child>right</child>
@@ -92,6 +101,9 @@
                     </box>
                 </geometry>
             </collision>
+            <inertial>
+        <mass>1.000</mass>
+      </inertial>
         </link>
         <joint name="left_bottom_joint" type="fixed">
             <child>left</child>
@@ -117,6 +129,9 @@
                     </box>
                 </geometry>
             </collision>
+            <inertial>
+        <mass>1.000</mass>
+      </inertial>
         </link>
         <joint name="shelf1_bottom_joint" type="fixed">
             <child>shelf1</child>
@@ -142,6 +157,9 @@
                     </box>
                 </geometry>
             </collision>
+            <inertial>
+        <mass>1.000</mass>
+      </inertial>
         </link>
         <joint name="shelf2_bottom_joint" type="fixed">
             <child>shelf2</child>

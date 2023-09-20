@@ -49,6 +49,7 @@ drake_jupyter_py_binary(
     ],
     deps = [
         "//C_Iris_Examples:sampling_based_motion_planners",
+        "//C_Iris_Examples:visualization_utils",
         "//bindings/pydrake",
     ],
 )
@@ -61,6 +62,7 @@ drake_jupyter_py_binary(
     ],
     deps = [
         "//C_Iris_Examples:sampling_based_motion_planners",
+        "//C_Iris_Examples:visualization_utils",
         "//bindings/pydrake",
     ],
 )

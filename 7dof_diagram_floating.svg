@@ -1,0 +1,596 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="2559pt" height="1526pt" viewBox="0.00 0.00 2559.25 1526.00">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 1522)">
+<title>_94466958324784</title>
+<polygon fill="white" stroke="transparent" points="-4,4 -4,-1522 2555.25,-1522 2555.25,4 -4,4"/>
+<g id="clust1" class="cluster">
+<title>cluster94466958324784diagram</title>
+<polygon fill="none" stroke="black" points="8,-8 8,-1510 2543.25,-1510 2543.25,-8 8,-8"/>
+<text text-anchor="middle" x="1275.63" y="-1494.8" font-family="Times,serif" font-size="14.00">94466958324784</text>
+</g>
+<g id="clust4" class="cluster">
+<title>cluster94466958324784subsystems</title>
+<polygon fill="none" stroke="white" points="16,-16 16,-1479 2535.25,-1479 2535.25,-16 16,-16"/>
+</g>
+<g id="clust5" class="cluster">
+<title>cluster94466960584560diagram</title>
+<polygon fill="none" stroke="black" points="24,-24 24,-1471 2527.25,-1471 2527.25,-24 24,-24"/>
+<text text-anchor="middle" x="1275.63" y="-1455.8" font-family="Times,serif" font-size="14.00">HardwareStation</text>
+</g>
+<g id="clust6" class="cluster">
+<title>cluster94466960584560inputports</title>
+<polygon fill="lightgrey" stroke="lightgrey" points="32,-1311 32,-1440 296.28,-1440 296.28,-1311 32,-1311"/>
+<text text-anchor="middle" x="164.14" y="-1424.8" font-family="Times,serif" font-size="14.00">input ports</text>
+</g>
+<g id="clust7" class="cluster">
+<title>cluster94466960584560outputports</title>
+<polygon fill="lightgrey" stroke="lightgrey" points="2243.28,-32 2243.28,-647 2519.25,-647 2519.25,-32 2243.28,-32"/>
+<text text-anchor="middle" x="2381.27" y="-631.8" font-family="Times,serif" font-size="14.00">output ports</text>
+</g>
+<g id="clust8" class="cluster">
+<title>cluster94466960584560subsystems</title>
+<polygon fill="none" stroke="white" points="316.28,-655 316.28,-1427 2510.27,-1427 2510.27,-655 316.28,-655"/>
+</g>
+<!-- _94466960584560_u0 -->
+<g id="node1" class="node">
+<title>_94466960584560_u0</title>
+<ellipse fill="none" stroke="blue" cx="164.14" cy="-1337" rx="69.59" ry="18"/>
+<text text-anchor="middle" x="164.14" y="-1333.3" font-family="Times,serif" font-size="14.00">iiwa.position</text>
+</g>
+<!-- 94466965327392 -->
+<g id="node16" class="node">
+<title>94466965327392</title>
+<polygon fill="none" stroke="black" points="353.78,-1326 353.78,-1372 724.78,-1372 724.78,-1326 353.78,-1326"/>
+<text text-anchor="middle" x="539.28" y="-1356.8" font-family="Times,serif" font-size="14.00">drake/systems/PassThrough@000055eacde94e20</text>
+<polyline fill="none" stroke="black" points="353.78,-1349 724.78,-1349 "/>
+<text text-anchor="middle" x="446.78" y="-1333.8" font-family="Times,serif" font-size="14.00">u</text>
+<polyline fill="none" stroke="black" points="539.78,-1326 539.78,-1349 "/>
+<text text-anchor="middle" x="632.28" y="-1333.8" font-family="Times,serif" font-size="14.00">y</text>
+</g>
+<!-- _94466960584560_u0&#45;&gt;94466965327392 -->
+<g id="edge21" class="edge">
+<title>_94466960584560_u0-&gt;94466965327392:u0</title>
+<path fill="none" stroke="blue" d="M234.02,-1337C266.33,-1337 305.67,-1337 342.09,-1337"/>
+<polygon fill="blue" stroke="blue" points="342.28,-1340.5 352.28,-1337 342.28,-1333.5 342.28,-1340.5"/>
+</g>
+<!-- _94466960584560_u1 -->
+<g id="node2" class="node">
+<title>_94466960584560_u1</title>
+<ellipse fill="none" stroke="blue" cx="164.14" cy="-1391" rx="124.28" ry="18"/>
+<text text-anchor="middle" x="164.14" y="-1387.3" font-family="Times,serif" font-size="14.00">iiwa.feedforward_torque</text>
+</g>
+<!-- 94466971971856 -->
+<g id="node20" class="node">
+<title>94466971971856</title>
+<polygon fill="none" stroke="black" points="1481.78,-1356 1481.78,-1402 1852.78,-1402 1852.78,-1356 1481.78,-1356"/>
+<text text-anchor="middle" x="1667.28" y="-1386.8" font-family="Times,serif" font-size="14.00">drake/systems/PassThrough@000055eace4eb110</text>
+<polyline fill="none" stroke="black" points="1481.78,-1379 1852.78,-1379 "/>
+<text text-anchor="middle" x="1574.78" y="-1363.8" font-family="Times,serif" font-size="14.00">u</text>
+<polyline fill="none" stroke="black" points="1667.78,-1356 1667.78,-1379 "/>
+<text text-anchor="middle" x="1760.28" y="-1363.8" font-family="Times,serif" font-size="14.00">y</text>
+</g>
+<!-- _94466960584560_u1&#45;&gt;94466971971856 -->
+<g id="edge22" class="edge">
+<title>_94466960584560_u1-&gt;94466971971856:u0</title>
+<path fill="none" stroke="blue" d="M273.46,-1399.59C398.05,-1409 608.78,-1423.49 790.28,-1429 1079.48,-1437.78 1188.01,-1568.89 1441.28,-1429 1466.21,-1415.23 1452.45,-1378.09 1470.42,-1369.02"/>
+<polygon fill="blue" stroke="blue" points="1471.18,-1372.44 1480.28,-1367 1469.78,-1365.58 1471.18,-1372.44"/>
+</g>
+<!-- _94466960584560_y0 -->
+<g id="node3" class="node">
+<title>_94466960584560_y0</title>
+<ellipse fill="none" stroke="green" cx="2381.27" cy="-58" rx="129.98" ry="18"/>
+<text text-anchor="middle" x="2381.27" y="-54.3" font-family="Times,serif" font-size="14.00">iiwa.position_commanded</text>
+</g>
+<!-- _94466960584560_y1 -->
+<g id="node4" class="node">
+<title>_94466960584560_y1</title>
+<ellipse fill="none" stroke="green" cx="2381.27" cy="-436" rx="120.48" ry="18"/>
+<text text-anchor="middle" x="2381.27" y="-432.3" font-family="Times,serif" font-size="14.00">iiwa.position_measured</text>
+</g>
+<!-- _94466960584560_y2 -->
+<g id="node5" class="node">
+<title>_94466960584560_y2</title>
+<ellipse fill="none" stroke="green" cx="2381.27" cy="-382" rx="119.68" ry="18"/>
+<text text-anchor="middle" x="2381.27" y="-378.3" font-family="Times,serif" font-size="14.00">iiwa.velocity_estimated</text>
+</g>
+<!-- _94466960584560_y3 -->
+<g id="node6" class="node">
+<title>_94466960584560_y3</title>
+<ellipse fill="none" stroke="green" cx="2381.27" cy="-220" rx="106.68" ry="18"/>
+<text text-anchor="middle" x="2381.27" y="-216.3" font-family="Times,serif" font-size="14.00">iiwa.state_estimated</text>
+</g>
+<!-- _94466960584560_y4 -->
+<g id="node7" class="node">
+<title>_94466960584560_y4</title>
+<ellipse fill="none" stroke="green" cx="2381.27" cy="-544" rx="124.28" ry="18"/>
+<text text-anchor="middle" x="2381.27" y="-540.3" font-family="Times,serif" font-size="14.00">iiwa.torque_commanded</text>
+</g>
+<!-- _94466960584560_y5 -->
+<g id="node8" class="node">
+<title>_94466960584560_y5</title>
+<ellipse fill="none" stroke="green" cx="2381.27" cy="-490" rx="113.98" ry="18"/>
+<text text-anchor="middle" x="2381.27" y="-486.3" font-family="Times,serif" font-size="14.00">iiwa.torque_measured</text>
+</g>
+<!-- _94466960584560_y6 -->
+<g id="node9" class="node">
+<title>_94466960584560_y6</title>
+<ellipse fill="none" stroke="green" cx="2381.27" cy="-166" rx="106.68" ry="18"/>
+<text text-anchor="middle" x="2381.27" y="-162.3" font-family="Times,serif" font-size="14.00">iiwa.torque_external</text>
+</g>
+<!-- _94466960584560_y7 -->
+<g id="node10" class="node">
+<title>_94466960584560_y7</title>
+<ellipse fill="none" stroke="green" cx="2381.27" cy="-598" rx="70.39" ry="18"/>
+<text text-anchor="middle" x="2381.27" y="-594.3" font-family="Times,serif" font-size="14.00">query_object</text>
+</g>
+<!-- _94466960584560_y8 -->
+<g id="node11" class="node">
+<title>_94466960584560_y8</title>
+<ellipse fill="none" stroke="green" cx="2381.27" cy="-112" rx="81.49" ry="18"/>
+<text text-anchor="middle" x="2381.27" y="-108.3" font-family="Times,serif" font-size="14.00">contact_results</text>
+</g>
+<!-- _94466960584560_y9 -->
+<g id="node12" class="node">
+<title>_94466960584560_y9</title>
+<ellipse fill="none" stroke="green" cx="2381.27" cy="-328" rx="117.78" ry="18"/>
+<text text-anchor="middle" x="2381.27" y="-324.3" font-family="Times,serif" font-size="14.00">plant_continuous_state</text>
+</g>
+<!-- _94466960584560_y10 -->
+<g id="node13" class="node">
+<title>_94466960584560_y10</title>
+<ellipse fill="none" stroke="green" cx="2381.27" cy="-274" rx="63.89" ry="18"/>
+<text text-anchor="middle" x="2381.27" y="-270.3" font-family="Times,serif" font-size="14.00">body_poses</text>
+</g>
+<!-- 94466964346512 -->
+<g id="node14" class="node">
+<title>94466964346512</title>
+<polygon fill="none" stroke="black" points="790.28,-664 790.28,-1354 1441.28,-1354 1441.28,-664 790.28,-664"/>
+<text text-anchor="middle" x="1115.78" y="-1338.8" font-family="Times,serif" font-size="14.00">plant</text>
+<polyline fill="none" stroke="black" points="790.28,-1331 1441.28,-1331 "/>
+<text text-anchor="middle" x="928.78" y="-1308.8" font-family="Times,serif" font-size="14.00">geometry_query</text>
+<polyline fill="none" stroke="black" points="790.28,-1294 1067.28,-1294 "/>
+<text text-anchor="middle" x="928.78" y="-1271.8" font-family="Times,serif" font-size="14.00">WorldModelInstance_actuation</text>
+<polyline fill="none" stroke="black" points="790.28,-1257 1067.28,-1257 "/>
+<text text-anchor="middle" x="928.78" y="-1234.8" font-family="Times,serif" font-size="14.00">DefaultModelInstance_actuation</text>
+<polyline fill="none" stroke="black" points="790.28,-1220 1067.28,-1220 "/>
+<text text-anchor="middle" x="928.78" y="-1197.8" font-family="Times,serif" font-size="14.00">iiwa_actuation</text>
+<polyline fill="none" stroke="black" points="790.28,-1183 1067.28,-1183 "/>
+<text text-anchor="middle" x="928.78" y="-1160.8" font-family="Times,serif" font-size="14.00">wsg_actuation</text>
+<polyline fill="none" stroke="black" points="790.28,-1146 1067.28,-1146 "/>
+<text text-anchor="middle" x="928.78" y="-1123.8" font-family="Times,serif" font-size="14.00">shelves1_actuation</text>
+<polyline fill="none" stroke="black" points="790.28,-1109 1067.28,-1109 "/>
+<text text-anchor="middle" x="928.78" y="-1086.8" font-family="Times,serif" font-size="14.00">shelves2_actuation</text>
+<polyline fill="none" stroke="black" points="790.28,-1072 1067.28,-1072 "/>
+<text text-anchor="middle" x="928.78" y="-1049.8" font-family="Times,serif" font-size="14.00">ground_actuation</text>
+<polyline fill="none" stroke="black" points="790.28,-1035 1067.28,-1035 "/>
+<text text-anchor="middle" x="928.78" y="-1012.8" font-family="Times,serif" font-size="14.00">actuation</text>
+<polyline fill="none" stroke="black" points="790.28,-998 1067.28,-998 "/>
+<text text-anchor="middle" x="928.78" y="-975.8" font-family="Times,serif" font-size="14.00">WorldModelInstance_desired_state</text>
+<polyline fill="none" stroke="black" points="790.28,-961 1067.28,-961 "/>
+<text text-anchor="middle" x="928.78" y="-938.8" font-family="Times,serif" font-size="14.00">DefaultModelInstance_desired_state</text>
+<polyline fill="none" stroke="black" points="790.28,-924 1067.28,-924 "/>
+<text text-anchor="middle" x="928.78" y="-901.8" font-family="Times,serif" font-size="14.00">iiwa_desired_state</text>
+<polyline fill="none" stroke="black" points="790.28,-887 1067.28,-887 "/>
+<text text-anchor="middle" x="928.78" y="-864.8" font-family="Times,serif" font-size="14.00">wsg_desired_state</text>
+<polyline fill="none" stroke="black" points="790.28,-850 1067.28,-850 "/>
+<text text-anchor="middle" x="928.78" y="-827.8" font-family="Times,serif" font-size="14.00">shelves1_desired_state</text>
+<polyline fill="none" stroke="black" points="790.28,-813 1067.28,-813 "/>
+<text text-anchor="middle" x="928.78" y="-790.8" font-family="Times,serif" font-size="14.00">shelves2_desired_state</text>
+<polyline fill="none" stroke="black" points="790.28,-776 1067.28,-776 "/>
+<text text-anchor="middle" x="928.78" y="-753.8" font-family="Times,serif" font-size="14.00">ground_desired_state</text>
+<polyline fill="none" stroke="black" points="790.28,-739 1067.28,-739 "/>
+<text text-anchor="middle" x="928.78" y="-716.8" font-family="Times,serif" font-size="14.00">applied_generalized_force</text>
+<polyline fill="none" stroke="black" points="790.28,-702 1067.28,-702 "/>
+<text text-anchor="middle" x="928.78" y="-679.3" font-family="Times,serif" font-size="14.00">applied_spatial_force</text>
+<polyline fill="none" stroke="black" points="1067.28,-664 1067.28,-1331 "/>
+<text text-anchor="middle" x="1254.28" y="-1315.8" font-family="Times,serif" font-size="14.00">geometry_pose</text>
+<polyline fill="none" stroke="black" points="1067.28,-1308 1441.28,-1308 "/>
+<text text-anchor="middle" x="1254.28" y="-1292.8" font-family="Times,serif" font-size="14.00">state</text>
+<polyline fill="none" stroke="black" points="1067.28,-1285 1441.28,-1285 "/>
+<text text-anchor="middle" x="1254.28" y="-1269.8" font-family="Times,serif" font-size="14.00">body_poses</text>
+<polyline fill="none" stroke="black" points="1067.28,-1262 1441.28,-1262 "/>
+<text text-anchor="middle" x="1254.28" y="-1246.8" font-family="Times,serif" font-size="14.00">spatial_velocities</text>
+<polyline fill="none" stroke="black" points="1067.28,-1239 1441.28,-1239 "/>
+<text text-anchor="middle" x="1254.28" y="-1223.8" font-family="Times,serif" font-size="14.00">spatial_accelerations</text>
+<polyline fill="none" stroke="black" points="1067.28,-1216 1441.28,-1216 "/>
+<text text-anchor="middle" x="1254.28" y="-1200.8" font-family="Times,serif" font-size="14.00">generalized_acceleration</text>
+<polyline fill="none" stroke="black" points="1067.28,-1193 1441.28,-1193 "/>
+<text text-anchor="middle" x="1254.28" y="-1177.8" font-family="Times,serif" font-size="14.00">WorldModelInstance_state</text>
+<polyline fill="none" stroke="black" points="1067.28,-1170 1441.28,-1170 "/>
+<text text-anchor="middle" x="1254.28" y="-1154.8" font-family="Times,serif" font-size="14.00">WorldModelInstance_generalized_acceleration</text>
+<polyline fill="none" stroke="black" points="1067.28,-1147 1441.28,-1147 "/>
+<text text-anchor="middle" x="1254.28" y="-1131.8" font-family="Times,serif" font-size="14.00">DefaultModelInstance_state</text>
+<polyline fill="none" stroke="black" points="1067.28,-1124 1441.28,-1124 "/>
+<text text-anchor="middle" x="1254.28" y="-1108.8" font-family="Times,serif" font-size="14.00">DefaultModelInstance_generalized_acceleration</text>
+<polyline fill="none" stroke="black" points="1067.28,-1101 1441.28,-1101 "/>
+<text text-anchor="middle" x="1254.28" y="-1085.8" font-family="Times,serif" font-size="14.00">iiwa_state</text>
+<polyline fill="none" stroke="black" points="1067.28,-1078 1441.28,-1078 "/>
+<text text-anchor="middle" x="1254.28" y="-1062.8" font-family="Times,serif" font-size="14.00">iiwa_generalized_acceleration</text>
+<polyline fill="none" stroke="black" points="1067.28,-1055 1441.28,-1055 "/>
+<text text-anchor="middle" x="1254.28" y="-1039.8" font-family="Times,serif" font-size="14.00">wsg_state</text>
+<polyline fill="none" stroke="black" points="1067.28,-1032 1441.28,-1032 "/>
+<text text-anchor="middle" x="1254.28" y="-1016.8" font-family="Times,serif" font-size="14.00">wsg_generalized_acceleration</text>
+<polyline fill="none" stroke="black" points="1067.28,-1009 1441.28,-1009 "/>
+<text text-anchor="middle" x="1254.28" y="-993.8" font-family="Times,serif" font-size="14.00">shelves1_state</text>
+<polyline fill="none" stroke="black" points="1067.28,-986 1441.28,-986 "/>
+<text text-anchor="middle" x="1254.28" y="-970.8" font-family="Times,serif" font-size="14.00">shelves1_generalized_acceleration</text>
+<polyline fill="none" stroke="black" points="1067.28,-963 1441.28,-963 "/>
+<text text-anchor="middle" x="1254.28" y="-947.8" font-family="Times,serif" font-size="14.00">shelves2_state</text>
+<polyline fill="none" stroke="black" points="1067.28,-940 1441.28,-940 "/>
+<text text-anchor="middle" x="1254.28" y="-924.8" font-family="Times,serif" font-size="14.00">shelves2_generalized_acceleration</text>
+<polyline fill="none" stroke="black" points="1067.28,-917 1441.28,-917 "/>
+<text text-anchor="middle" x="1254.28" y="-901.8" font-family="Times,serif" font-size="14.00">ground_state</text>
+<polyline fill="none" stroke="black" points="1067.28,-894 1441.28,-894 "/>
+<text text-anchor="middle" x="1254.28" y="-878.8" font-family="Times,serif" font-size="14.00">ground_generalized_acceleration</text>
+<polyline fill="none" stroke="black" points="1067.28,-871 1441.28,-871 "/>
+<text text-anchor="middle" x="1254.28" y="-855.8" font-family="Times,serif" font-size="14.00">WorldModelInstance_generalized_contact_forces</text>
+<polyline fill="none" stroke="black" points="1067.28,-848 1441.28,-848 "/>
+<text text-anchor="middle" x="1254.28" y="-832.8" font-family="Times,serif" font-size="14.00">DefaultModelInstance_generalized_contact_forces</text>
+<polyline fill="none" stroke="black" points="1067.28,-825 1441.28,-825 "/>
+<text text-anchor="middle" x="1254.28" y="-809.8" font-family="Times,serif" font-size="14.00">iiwa_generalized_contact_forces</text>
+<polyline fill="none" stroke="black" points="1067.28,-802 1441.28,-802 "/>
+<text text-anchor="middle" x="1254.28" y="-786.8" font-family="Times,serif" font-size="14.00">wsg_generalized_contact_forces</text>
+<polyline fill="none" stroke="black" points="1067.28,-779 1441.28,-779 "/>
+<text text-anchor="middle" x="1254.28" y="-763.8" font-family="Times,serif" font-size="14.00">shelves1_generalized_contact_forces</text>
+<polyline fill="none" stroke="black" points="1067.28,-756 1441.28,-756 "/>
+<text text-anchor="middle" x="1254.28" y="-740.8" font-family="Times,serif" font-size="14.00">shelves2_generalized_contact_forces</text>
+<polyline fill="none" stroke="black" points="1067.28,-733 1441.28,-733 "/>
+<text text-anchor="middle" x="1254.28" y="-717.8" font-family="Times,serif" font-size="14.00">ground_generalized_contact_forces</text>
+<polyline fill="none" stroke="black" points="1067.28,-710 1441.28,-710 "/>
+<text text-anchor="middle" x="1254.28" y="-694.8" font-family="Times,serif" font-size="14.00">reaction_forces</text>
+<polyline fill="none" stroke="black" points="1067.28,-687 1441.28,-687 "/>
+<text text-anchor="middle" x="1254.28" y="-671.8" font-family="Times,serif" font-size="14.00">contact_results</text>
+</g>
+<!-- 94466964346512&#45;&gt;_94466960584560_y3 -->
+<g id="edge26" class="edge">
+<title>94466964346512:y10-&gt;_94466960584560_y3</title>
+<path fill="none" stroke="green" d="M1441.28,-1090C1532.25,-1090 1413.38,-336.76 1477.28,-272 1586.53,-161.26 2067.55,-190.79 2279.45,-209.79"/>
+<polygon fill="green" stroke="green" points="2279.36,-213.3 2289.64,-210.72 2280,-206.33 2279.36,-213.3"/>
+</g>
+<!-- 94466964346512&#45;&gt;_94466960584560_y6 -->
+<g id="edge29" class="edge">
+<title>94466964346512:y22-&gt;_94466960584560_y6</title>
+<path fill="none" stroke="green" d="M1441.28,-813C1510.84,-813 1427.28,-236.36 1477.28,-188 1532.91,-134.18 2039.85,-150.29 2268.87,-160.48"/>
+<polygon fill="green" stroke="green" points="2268.75,-163.98 2278.89,-160.93 2269.06,-156.98 2268.75,-163.98"/>
+</g>
+<!-- 94466964346512&#45;&gt;_94466960584560_y8 -->
+<g id="edge31" class="edge">
+<title>94466964346512:y28-&gt;_94466960584560_y8</title>
+<path fill="none" stroke="green" d="M1441.28,-675C1500.08,-675 1435.09,-187.97 1477.28,-147 1534.68,-91.26 2074.07,-102.13 2290.77,-108.85"/>
+<polygon fill="green" stroke="green" points="2290.74,-112.35 2300.85,-109.16 2290.96,-105.35 2290.74,-112.35"/>
+</g>
+<!-- 94466964346512&#45;&gt;_94466960584560_y9 -->
+<g id="edge32" class="edge">
+<title>94466964346512:y1-&gt;_94466960584560_y9</title>
+<path fill="none" stroke="green" d="M1441.28,-1297C1512.83,-1297 1442.36,-716.46 1477.28,-654 1587.14,-457.5 1681.15,-440.39 1893.28,-365 2014.55,-321.9 2163.21,-316.9 2264.15,-319.97"/>
+<polygon fill="green" stroke="green" points="2264.27,-323.48 2274.38,-320.32 2264.51,-316.48 2264.27,-323.48"/>
+</g>
+<!-- 94466964346512&#45;&gt;_94466960584560_y10 -->
+<g id="edge33" class="edge">
+<title>94466964346512:y2-&gt;_94466960584560_y10</title>
+<path fill="none" stroke="green" d="M1441.28,-1274C1491.15,-1274 1443.92,-414.08 1477.28,-377 1586.98,-255.07 2114.07,-263.25 2308.24,-270.63"/>
+<polygon fill="green" stroke="green" points="2308.21,-274.13 2318.34,-271.02 2308.49,-267.14 2308.21,-274.13"/>
+</g>
+<!-- 94466960744576 -->
+<g id="node15" class="node">
+<title>94466960744576</title>
+<polygon fill="none" stroke="black" points="1904.78,-1208.5 1904.78,-1323.5 2203.78,-1323.5 2203.78,-1208.5 1904.78,-1208.5"/>
+<text text-anchor="middle" x="2054.28" y="-1308.3" font-family="Times,serif" font-size="14.00">scene_graph</text>
+<polyline fill="none" stroke="black" points="1904.78,-1300.5 2203.78,-1300.5 "/>
+<text text-anchor="middle" x="2025.28" y="-1285.3" font-family="Times,serif" font-size="14.00">plant_pose</text>
+<polyline fill="none" stroke="black" points="1904.78,-1277.5 2145.78,-1277.5 "/>
+<text text-anchor="middle" x="2025.28" y="-1262.3" font-family="Times,serif" font-size="14.00">plant_configuration</text>
+<polyline fill="none" stroke="black" points="1904.78,-1254.5 2145.78,-1254.5 "/>
+<text text-anchor="middle" x="2025.28" y="-1239.3" font-family="Times,serif" font-size="14.00">inertia_visualizer_pose</text>
+<polyline fill="none" stroke="black" points="1904.78,-1231.5 2145.78,-1231.5 "/>
+<text text-anchor="middle" x="2025.28" y="-1216.3" font-family="Times,serif" font-size="14.00">inertia_visualizer_configuration</text>
+<polyline fill="none" stroke="black" points="2145.78,-1208.5 2145.78,-1300.5 "/>
+<text text-anchor="middle" x="2174.78" y="-1250.8" font-family="Times,serif" font-size="14.00">query</text>
+</g>
+<!-- 94466964346512&#45;&gt;94466960744576 -->
+<g id="edge5" class="edge">
+<title>94466964346512:y0-&gt;94466960744576:u0</title>
+<path fill="none" stroke="black" d="M1441.28,-1320C1626.3,-1320 1675.14,-1336.55 1857.28,-1304 1874.64,-1300.9 1880,-1292.79 1893.24,-1289.98"/>
+<polygon fill="black" stroke="black" points="1893.66,-1293.45 1903.28,-1289 1892.99,-1286.49 1893.66,-1293.45"/>
+</g>
+<!-- 94466953758544 -->
+<g id="node17" class="node">
+<title>94466953758544</title>
+<polygon fill="none" stroke="black" points="1477.28,-663.5 1477.28,-732.5 1857.28,-732.5 1857.28,-663.5 1477.28,-663.5"/>
+<text text-anchor="middle" x="1667.28" y="-717.3" font-family="Times,serif" font-size="14.00">drake/systems/Demultiplexer@000055eacd38c750</text>
+<polyline fill="none" stroke="black" points="1477.28,-709.5 1857.28,-709.5 "/>
+<text text-anchor="middle" x="1572.28" y="-682.8" font-family="Times,serif" font-size="14.00">u0</text>
+<polyline fill="none" stroke="black" points="1667.28,-663.5 1667.28,-709.5 "/>
+<text text-anchor="middle" x="1762.28" y="-694.3" font-family="Times,serif" font-size="14.00">y0</text>
+<polyline fill="none" stroke="black" points="1667.28,-686.5 1857.28,-686.5 "/>
+<text text-anchor="middle" x="1762.28" y="-671.3" font-family="Times,serif" font-size="14.00">y1</text>
+</g>
+<!-- 94466964346512&#45;&gt;94466953758544 -->
+<g id="edge3" class="edge">
+<title>94466964346512:y10-&gt;94466953758544:u0</title>
+<path fill="none" stroke="black" d="M1441.28,-1090C1527.71,-1090 1398.58,-718.46 1467.34,-687.98"/>
+<polygon fill="black" stroke="black" points="1468.16,-691.39 1477.28,-686 1466.79,-684.52 1468.16,-691.39"/>
+</g>
+<!-- 94466969019072 -->
+<g id="node18" class="node">
+<title>94466969019072</title>
+<polygon fill="none" stroke="black" points="1530.28,-1093.5 1530.28,-1162.5 1804.28,-1162.5 1804.28,-1093.5 1530.28,-1093.5"/>
+<text text-anchor="middle" x="1667.28" y="-1147.3" font-family="Times,serif" font-size="14.00">iiwa.controller</text>
+<polyline fill="none" stroke="black" points="1530.28,-1139.5 1804.28,-1139.5 "/>
+<text text-anchor="middle" x="1595.78" y="-1124.3" font-family="Times,serif" font-size="14.00">estimated_state</text>
+<polyline fill="none" stroke="black" points="1530.28,-1116.5 1661.28,-1116.5 "/>
+<text text-anchor="middle" x="1595.78" y="-1101.3" font-family="Times,serif" font-size="14.00">desired_state</text>
+<polyline fill="none" stroke="black" points="1661.28,-1093.5 1661.28,-1139.5 "/>
+<text text-anchor="middle" x="1732.78" y="-1124.3" font-family="Times,serif" font-size="14.00">generalized_force</text>
+<polyline fill="none" stroke="black" points="1661.28,-1116.5 1804.28,-1116.5 "/>
+<text text-anchor="middle" x="1732.78" y="-1101.3" font-family="Times,serif" font-size="14.00">force</text>
+</g>
+<!-- 94466964346512&#45;&gt;94466969019072 -->
+<g id="edge14" class="edge">
+<title>94466964346512:y10-&gt;94466969019072:u0</title>
+<path fill="none" stroke="black" d="M1441.28,-1090C1480.22,-1090 1485.9,-1121.75 1519.13,-1127.21"/>
+<polygon fill="black" stroke="black" points="1519.04,-1130.71 1529.28,-1128 1519.58,-1123.73 1519.04,-1130.71"/>
+</g>
+<!-- 94466969018192 -->
+<g id="node25" class="node">
+<title>94466969018192</title>
+<polygon fill="none" stroke="black" points="1606.28,-751 1606.28,-797 1728.28,-797 1728.28,-751 1606.28,-751"/>
+<text text-anchor="middle" x="1667.28" y="-781.8" font-family="Times,serif" font-size="14.00">contact_to_lcm</text>
+<polyline fill="none" stroke="black" points="1606.28,-774 1728.28,-774 "/>
+<text text-anchor="middle" x="1636.78" y="-758.8" font-family="Times,serif" font-size="14.00">u0</text>
+<polyline fill="none" stroke="black" points="1667.28,-751 1667.28,-774 "/>
+<text text-anchor="middle" x="1697.78" y="-758.8" font-family="Times,serif" font-size="14.00">y0</text>
+</g>
+<!-- 94466964346512&#45;&gt;94466969018192 -->
+<g id="edge13" class="edge">
+<title>94466964346512:y28-&gt;94466969018192:u0</title>
+<path fill="none" stroke="black" d="M1441.28,-675C1475.08,-675 1449.69,-722.46 1477.28,-742 1521.42,-773.27 1544.77,-763.44 1595.18,-762.13"/>
+<polygon fill="black" stroke="black" points="1595.32,-765.63 1605.28,-762 1595.23,-758.63 1595.32,-765.63"/>
+</g>
+<!-- 94466962900736 -->
+<g id="node27" class="node">
+<title>94466962900736</title>
+<polygon fill="none" stroke="black" points="1520.78,-1232 1520.78,-1278 1813.78,-1278 1813.78,-1232 1520.78,-1232"/>
+<text text-anchor="middle" x="1667.28" y="-1262.8" font-family="Times,serif" font-size="14.00">inertia_visualizer</text>
+<polyline fill="none" stroke="black" points="1520.78,-1255 1813.78,-1255 "/>
+<text text-anchor="middle" x="1604.78" y="-1239.8" font-family="Times,serif" font-size="14.00">plant_geometry_pose</text>
+<polyline fill="none" stroke="black" points="1688.78,-1232 1688.78,-1255 "/>
+<text text-anchor="middle" x="1751.28" y="-1239.8" font-family="Times,serif" font-size="14.00">geometry_pose</text>
+</g>
+<!-- 94466964346512&#45;&gt;94466962900736 -->
+<g id="edge7" class="edge">
+<title>94466964346512:y0-&gt;94466962900736:u0</title>
+<path fill="none" stroke="black" d="M1441.28,-1320C1486.19,-1320 1473.18,-1254.56 1509.04,-1244.34"/>
+<polygon fill="black" stroke="black" points="1509.82,-1247.77 1519.28,-1243 1508.91,-1240.82 1509.82,-1247.77"/>
+</g>
+<!-- 94466964663648 -->
+<g id="node31" class="node">
+<title>94466964663648</title>
+<polygon fill="none" stroke="black" points="2275.27,-986.5 2275.27,-1055.5 2487.27,-1055.5 2487.27,-986.5 2275.27,-986.5"/>
+<text text-anchor="middle" x="2381.27" y="-1040.3" font-family="Times,serif" font-size="14.00">meshcat_contact_visualizer</text>
+<polyline fill="none" stroke="black" points="2275.27,-1032.5 2487.27,-1032.5 "/>
+<text text-anchor="middle" x="2354.27" y="-1017.3" font-family="Times,serif" font-size="14.00">contact_results</text>
+<polyline fill="none" stroke="black" points="2275.27,-1009.5 2433.27,-1009.5 "/>
+<text text-anchor="middle" x="2354.27" y="-994.3" font-family="Times,serif" font-size="14.00">query_object</text>
+<polyline fill="none" stroke="black" points="2433.27,-986.5 2433.27,-1032.5 "/>
+<text text-anchor="middle" x="2460.27" y="-1005.8" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- 94466964346512&#45;&gt;94466964663648 -->
+<g id="edge11" class="edge">
+<title>94466964346512:y28-&gt;94466964663648:u0</title>
+<path fill="none" stroke="black" d="M1441.28,-675C1501.66,-675 1434.48,-763.4 1477.28,-806 1604.94,-933.07 2073.47,-1017.89 2264.03,-1020.92"/>
+<polygon fill="black" stroke="black" points="2264.24,-1024.42 2274.27,-1021 2264.3,-1017.42 2264.24,-1024.42"/>
+</g>
+<!-- 94466960744576&#45;&gt;_94466960584560_y7 -->
+<g id="edge30" class="edge">
+<title>94466960744576:y0-&gt;_94466960584560_y7</title>
+<path fill="none" stroke="green" d="M2175.28,-1207C2175.28,-1168.44 2205.04,-1167.18 2215.28,-1130 2229.43,-1078.6 2211.87,-694.08 2243.28,-651 2258.86,-629.63 2284.31,-616.87 2309.07,-609.26"/>
+<polygon fill="green" stroke="green" points="2310.19,-612.58 2318.86,-606.49 2308.29,-605.84 2310.19,-612.58"/>
+</g>
+<!-- 94466960744576&#45;&gt;94466964346512 -->
+<g id="edge9" class="edge">
+<title>94466960744576:y0-&gt;94466964346512:u0</title>
+<path fill="none" stroke="black" d="M2175.28,-1207C2175.28,-1086.78 2009.15,-1148.33 1904.78,-1208 1868.88,-1228.52 1892.78,-1266.79 1857.28,-1288 1784.72,-1331.35 1551.58,-1263.72 1477.28,-1304 1453.05,-1317.14 1465.78,-1341.88 1441.28,-1354.5 1425.19,-1362.79 802.73,-1367.14 789.78,-1354.5 779.67,-1344.63 773.64,-1325.55 779.65,-1317.14"/>
+<polygon fill="black" stroke="black" points="781.12,-1320.32 788.78,-1313 778.23,-1313.95 781.12,-1320.32"/>
+</g>
+<!-- 94466953184352 -->
+<g id="node23" class="node">
+<title>94466953184352</title>
+<polygon fill="none" stroke="black" points="2270.27,-1178 2270.27,-1224 2492.27,-1224 2492.27,-1178 2270.27,-1178"/>
+<text text-anchor="middle" x="2381.27" y="-1208.8" font-family="Times,serif" font-size="14.00">drake_visualizer(illustration)</text>
+<polyline fill="none" stroke="black" points="2270.27,-1201 2492.27,-1201 "/>
+<text text-anchor="middle" x="2347.27" y="-1185.8" font-family="Times,serif" font-size="14.00">query_object</text>
+<polyline fill="none" stroke="black" points="2424.27,-1178 2424.27,-1201 "/>
+<text text-anchor="middle" x="2458.27" y="-1185.8" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- 94466960744576&#45;&gt;94466953184352 -->
+<g id="edge2" class="edge">
+<title>94466960744576:y0-&gt;94466953184352:u0</title>
+<path fill="none" stroke="black" d="M2205.28,-1254C2242.02,-1254 2231.43,-1200.62 2259.29,-1190.61"/>
+<polygon fill="black" stroke="black" points="2259.95,-1194.05 2269.27,-1189 2258.84,-1187.13 2259.95,-1194.05"/>
+</g>
+<!-- 94466953120832 -->
+<g id="node24" class="node">
+<title>94466953120832</title>
+<polygon fill="none" stroke="black" points="2275.27,-1243 2275.27,-1289 2487.27,-1289 2487.27,-1243 2275.27,-1243"/>
+<text text-anchor="middle" x="2381.27" y="-1273.8" font-family="Times,serif" font-size="14.00">drake_visualizer(proximity)</text>
+<polyline fill="none" stroke="black" points="2275.27,-1266 2487.27,-1266 "/>
+<text text-anchor="middle" x="2349.77" y="-1250.8" font-family="Times,serif" font-size="14.00">query_object</text>
+<polyline fill="none" stroke="black" points="2424.27,-1243 2424.27,-1266 "/>
+<text text-anchor="middle" x="2455.77" y="-1250.8" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- 94466960744576&#45;&gt;94466953120832 -->
+<g id="edge1" class="edge">
+<title>94466960744576:y0-&gt;94466953120832:u0</title>
+<path fill="none" stroke="black" d="M2205.28,-1254C2232.23,-1254 2241.41,-1254 2264.06,-1254"/>
+<polygon fill="black" stroke="black" points="2264.27,-1257.5 2274.27,-1254 2264.27,-1250.5 2264.27,-1257.5"/>
+</g>
+<!-- 94466973514992 -->
+<g id="node28" class="node">
+<title>94466973514992</title>
+<polygon fill="none" stroke="black" points="2260.27,-1308 2260.27,-1354 2502.27,-1354 2502.27,-1308 2260.27,-1308"/>
+<text text-anchor="middle" x="2381.27" y="-1338.8" font-family="Times,serif" font-size="14.00">meshcat_visualizer(illustration)</text>
+<polyline fill="none" stroke="black" points="2260.27,-1331 2502.27,-1331 "/>
+<text text-anchor="middle" x="2342.27" y="-1315.8" font-family="Times,serif" font-size="14.00">query_object</text>
+<polyline fill="none" stroke="black" points="2424.27,-1308 2424.27,-1331 "/>
+<text text-anchor="middle" x="2463.27" y="-1315.8" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- 94466960744576&#45;&gt;94466973514992 -->
+<g id="edge17" class="edge">
+<title>94466960744576:y0-&gt;94466973514992:u0</title>
+<path fill="none" stroke="black" d="M2205.28,-1254C2238.87,-1254 2225.51,-1306.01 2249.2,-1316.98"/>
+<polygon fill="black" stroke="black" points="2248.77,-1320.47 2259.27,-1319 2250.15,-1313.6 2248.77,-1320.47"/>
+</g>
+<!-- 94466976041104 -->
+<g id="node29" class="node">
+<title>94466976041104</title>
+<polygon fill="none" stroke="black" points="2276.27,-1373 2276.27,-1419 2486.27,-1419 2486.27,-1373 2276.27,-1373"/>
+<text text-anchor="middle" x="2381.27" y="-1403.8" font-family="Times,serif" font-size="14.00">meshcat_visualizer(inertia)</text>
+<polyline fill="none" stroke="black" points="2276.27,-1396 2486.27,-1396 "/>
+<text text-anchor="middle" x="2350.27" y="-1380.8" font-family="Times,serif" font-size="14.00">query_object</text>
+<polyline fill="none" stroke="black" points="2424.27,-1373 2424.27,-1396 "/>
+<text text-anchor="middle" x="2455.27" y="-1380.8" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- 94466960744576&#45;&gt;94466976041104 -->
+<g id="edge20" class="edge">
+<title>94466960744576:y0-&gt;94466976041104:u0</title>
+<path fill="none" stroke="black" d="M2205.28,-1254C2257,-1254 2211.06,-1323.53 2243.28,-1364 2251.27,-1374.04 2255.95,-1380.43 2265.23,-1382.87"/>
+<polygon fill="black" stroke="black" points="2264.94,-1386.36 2275.27,-1384 2265.72,-1379.41 2264.94,-1386.36"/>
+</g>
+<!-- 94466962911456 -->
+<g id="node30" class="node">
+<title>94466962911456</title>
+<polygon fill="none" stroke="black" points="2265.27,-1113 2265.27,-1159 2497.27,-1159 2497.27,-1113 2265.27,-1113"/>
+<text text-anchor="middle" x="2381.27" y="-1143.8" font-family="Times,serif" font-size="14.00">meshcat_visualizer(proximity)</text>
+<polyline fill="none" stroke="black" points="2265.27,-1136 2497.27,-1136 "/>
+<text text-anchor="middle" x="2344.77" y="-1120.8" font-family="Times,serif" font-size="14.00">query_object</text>
+<polyline fill="none" stroke="black" points="2424.27,-1113 2424.27,-1136 "/>
+<text text-anchor="middle" x="2460.77" y="-1120.8" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- 94466960744576&#45;&gt;94466962911456 -->
+<g id="edge8" class="edge">
+<title>94466960744576:y0-&gt;94466962911456:u0</title>
+<path fill="none" stroke="black" d="M2205.28,-1254C2264.88,-1254 2208.56,-1139.27 2254.13,-1125.37"/>
+<polygon fill="black" stroke="black" points="2254.83,-1128.81 2264.27,-1124 2253.89,-1121.87 2254.83,-1128.81"/>
+</g>
+<!-- 94466960744576&#45;&gt;94466964663648 -->
+<g id="edge12" class="edge">
+<title>94466960744576:y0-&gt;94466964663648:u1</title>
+<path fill="none" stroke="black" d="M2175.28,-1207C2175.28,-1168.44 2198.51,-1164.73 2215.28,-1130 2241.63,-1075.41 2213.57,-1006.35 2264.26,-998.7"/>
+<polygon fill="black" stroke="black" points="2264.53,-1002.19 2274.27,-998 2264.05,-995.2 2264.53,-1002.19"/>
+</g>
+<!-- 94466965327392&#45;&gt;_94466960584560_y0 -->
+<g id="edge23" class="edge">
+<title>94466965327392:y0-&gt;_94466960584560_y0</title>
+<path fill="none" stroke="green" d="M726.28,-1337C802.5,-1337 754.19,-721.14 790.28,-654 975.86,-308.76 1110.81,-240.06 1477.28,-101 1753.87,3.95 2112.7,-22.34 2282.71,-43.5"/>
+<polygon fill="green" stroke="green" points="2282.29,-46.97 2292.65,-44.76 2283.17,-40.03 2282.29,-46.97"/>
+</g>
+<!-- 94466956750448 -->
+<g id="node21" class="node">
+<title>94466956750448</title>
+<polygon fill="none" stroke="black" points="990.28,-1373 990.28,-1419 1241.28,-1419 1241.28,-1373 990.28,-1373"/>
+<text text-anchor="middle" x="1115.78" y="-1403.8" font-family="Times,serif" font-size="14.00">iiwa.desired_state_from_position</text>
+<polyline fill="none" stroke="black" points="990.28,-1396 1241.28,-1396 "/>
+<text text-anchor="middle" x="1058.28" y="-1380.8" font-family="Times,serif" font-size="14.00">position</text>
+<polyline fill="none" stroke="black" points="1126.28,-1373 1126.28,-1396 "/>
+<text text-anchor="middle" x="1183.78" y="-1380.8" font-family="Times,serif" font-size="14.00">state</text>
+</g>
+<!-- 94466965327392&#45;&gt;94466956750448 -->
+<g id="edge4" class="edge">
+<title>94466965327392:y0-&gt;94466956750448:u0</title>
+<path fill="none" stroke="black" d="M726.28,-1337C757.15,-1337 760.36,-1356.37 790.28,-1364 872.84,-1385.07 898.15,-1384.11 978.68,-1384.01"/>
+<polygon fill="black" stroke="black" points="978.78,-1387.51 988.78,-1384 978.78,-1380.51 978.78,-1387.51"/>
+</g>
+<!-- 94466953758544&#45;&gt;_94466960584560_y1 -->
+<g id="edge24" class="edge">
+<title>94466953758544:y0-&gt;_94466960584560_y1</title>
+<path fill="none" stroke="green" d="M1857.28,-698C2058.13,-698 2056.08,-535.77 2243.28,-463 2256,-458.05 2269.76,-453.98 2283.48,-450.63"/>
+<polygon fill="green" stroke="green" points="2284.5,-453.98 2293.45,-448.31 2282.92,-447.16 2284.5,-453.98"/>
+</g>
+<!-- 94466953758544&#45;&gt;_94466960584560_y2 -->
+<g id="edge25" class="edge">
+<title>94466953758544:y1-&gt;_94466960584560_y2</title>
+<path fill="none" stroke="green" d="M1857.28,-675C1948.03,-675 1829.41,-538.48 1893.28,-474 1992.95,-373.37 2165.8,-364.12 2276.5,-370.33"/>
+<polygon fill="green" stroke="green" points="2276.49,-373.84 2286.68,-370.96 2276.91,-366.85 2276.49,-373.84"/>
+</g>
+<!-- 94466975465552 -->
+<g id="node19" class="node">
+<title>94466975465552</title>
+<polygon fill="none" stroke="black" points="1893.28,-1051.5 1893.28,-1120.5 2215.28,-1120.5 2215.28,-1051.5 1893.28,-1051.5"/>
+<text text-anchor="middle" x="2054.28" y="-1105.3" font-family="Times,serif" font-size="14.00">drake/systems/Adder@000055eace840050</text>
+<polyline fill="none" stroke="black" points="1893.28,-1097.5 2215.28,-1097.5 "/>
+<text text-anchor="middle" x="1970.78" y="-1082.3" font-family="Times,serif" font-size="14.00">u0</text>
+<polyline fill="none" stroke="black" points="1893.28,-1074.5 2048.28,-1074.5 "/>
+<text text-anchor="middle" x="1970.78" y="-1059.3" font-family="Times,serif" font-size="14.00">u1</text>
+<polyline fill="none" stroke="black" points="2048.28,-1051.5 2048.28,-1097.5 "/>
+<text text-anchor="middle" x="2131.78" y="-1070.8" font-family="Times,serif" font-size="14.00">sum</text>
+</g>
+<!-- 94466969019072&#45;&gt;94466975465552 -->
+<g id="edge18" class="edge">
+<title>94466969019072:y0-&gt;94466975465552:u0</title>
+<path fill="none" stroke="black" d="M1805.28,-1128C1844.89,-1128 1849.4,-1092.91 1882.98,-1086.88"/>
+<polygon fill="black" stroke="black" points="1883.61,-1090.34 1893.28,-1086 1883.02,-1083.36 1883.61,-1090.34"/>
+</g>
+<!-- 94466975465552&#45;&gt;_94466960584560_y4 -->
+<g id="edge27" class="edge">
+<title>94466975465552:y0-&gt;_94466960584560_y4</title>
+<path fill="none" stroke="green" d="M2215.28,-1074C2271.25,-1074 2206.54,-613.23 2243.28,-571 2248.25,-565.28 2254.06,-560.55 2260.42,-556.66"/>
+<polygon fill="green" stroke="green" points="2262.23,-559.66 2269.4,-551.87 2258.93,-553.49 2262.23,-559.66"/>
+</g>
+<!-- 94466975465552&#45;&gt;_94466960584560_y5 -->
+<g id="edge28" class="edge">
+<title>94466975465552:y0-&gt;_94466960584560_y5</title>
+<path fill="none" stroke="green" d="M2215.28,-1074C2277.25,-1074 2202.74,-563.86 2243.28,-517 2249.27,-510.07 2256.48,-504.6 2264.41,-500.31"/>
+<polygon fill="green" stroke="green" points="2266.1,-503.38 2273.65,-495.95 2263.11,-497.05 2266.1,-503.38"/>
+</g>
+<!-- 94466975465552&#45;&gt;94466964346512 -->
+<g id="edge10" class="edge">
+<title>94466975465552:y0-&gt;94466964346512:u3</title>
+<path fill="none" stroke="black" d="M2132.28,-1050C2132.28,-904.25 1583.04,-983.71 1477.28,-1084 1389.27,-1167.45 1532.52,-1274.6 1441.28,-1354.5 1427.66,-1366.42 802.62,-1367.25 789.78,-1354.5 779.54,-1344.33 773.73,-1240.89 782.69,-1210.41"/>
+<polygon fill="black" stroke="black" points="785.75,-1212.15 788.78,-1202 780.08,-1208.05 785.75,-1212.15"/>
+</g>
+<!-- 94466971971856&#45;&gt;94466975465552 -->
+<g id="edge19" class="edge">
+<title>94466971971856:y0-&gt;94466975465552:u1</title>
+<path fill="none" stroke="black" d="M1854.28,-1367C1918.66,-1367 1835.31,-1095.34 1883.53,-1065.63"/>
+<polygon fill="black" stroke="black" points="1884.53,-1068.98 1893.28,-1063 1882.71,-1062.22 1884.53,-1068.98"/>
+</g>
+<!-- 94466956750448&#45;&gt;94466969019072 -->
+<g id="edge15" class="edge">
+<title>94466956750448:y0-&gt;94466969019072:u1</title>
+<path fill="none" stroke="black" d="M1242.78,-1384C1331.45,-1384 1374.07,-1421.84 1441.28,-1364 1490.3,-1321.81 1456.17,-1284.13 1477.28,-1223 1494.78,-1172.32 1474.89,-1113.19 1519.18,-1105.78"/>
+<polygon fill="black" stroke="black" points="1519.58,-1109.26 1529.28,-1105 1519.04,-1102.28 1519.58,-1109.26"/>
+</g>
+<!-- 94466980295664 -->
+<g id="node22" class="node">
+<title>94466980295664</title>
+<polygon fill="none" stroke="black" points="324.28,-962 324.28,-1008 754.28,-1008 754.28,-962 324.28,-962"/>
+<text text-anchor="middle" x="539.28" y="-992.8" font-family="Times,serif" font-size="14.00">drake/systems/SharedPointerSystem@000055eacecdb3f0</text>
+<polyline fill="none" stroke="black" points="324.28,-985 754.28,-985 "/>
+<text text-anchor="middle" x="431.78" y="-969.8" font-family="Times,serif" font-size="14.00"> </text>
+<polyline fill="none" stroke="black" points="539.28,-962 539.28,-985 "/>
+<text text-anchor="middle" x="646.78" y="-969.8" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- 94466969070128 -->
+<g id="node26" class="node">
+<title>94466969070128</title>
+<polygon fill="none" stroke="black" points="1954.28,-751 1954.28,-797 2154.28,-797 2154.28,-751 1954.28,-751"/>
+<text text-anchor="middle" x="2054.28" y="-781.8" font-family="Times,serif" font-size="14.00">contact_results_publisher</text>
+<polyline fill="none" stroke="black" points="1954.28,-774 2154.28,-774 "/>
+<text text-anchor="middle" x="2026.78" y="-758.8" font-family="Times,serif" font-size="14.00">lcm_message</text>
+<polyline fill="none" stroke="black" points="2099.28,-751 2099.28,-774 "/>
+<text text-anchor="middle" x="2126.78" y="-758.8" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- 94466969018192&#45;&gt;94466969070128 -->
+<g id="edge16" class="edge">
+<title>94466969018192:y0-&gt;94466969070128:u0</title>
+<path fill="none" stroke="black" d="M1729.28,-762C1825.33,-762 1851.88,-762 1943.05,-762"/>
+<polygon fill="black" stroke="black" points="1943.28,-765.5 1953.28,-762 1943.28,-758.5 1943.28,-765.5"/>
+</g>
+<!-- 94466962900736&#45;&gt;94466960744576 -->
+<g id="edge6" class="edge">
+<title>94466962900736:y0-&gt;94466960744576:u2</title>
+<path fill="none" stroke="black" d="M1815.28,-1243C1850.72,-1243 1862.08,-1243 1893,-1243"/>
+<polygon fill="black" stroke="black" points="1893.28,-1246.5 1903.28,-1243 1893.28,-1239.5 1893.28,-1246.5"/>
+</g>
+</g>
+</svg>
