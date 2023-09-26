@@ -295,6 +295,8 @@ def plot_hpoly3d(meshcat, name, hpoly, color, wireframe = True, resolution = 30,
                                 color, wireframe=wireframe)
         
 def plot_hpoly3d_2(meshcat, name, hpoly, color, wireframe = True, resolution = -1, offset = np.zeros(3)):
+        #meshcat wierdness of double rendering
+        hpoly = HPolyhedron(hpoly.A(), hpoly.b() + 0.05*(np.random.rand(hpoly.b().shape[0])-0.5))
         verts = VPolytope(hpoly).vertices().T
         hull = ConvexHull(verts)
         triangles = []
@@ -305,10 +307,11 @@ def plot_hpoly3d_2(meshcat, name, hpoly, color, wireframe = True, resolution = -
         # objwf = self[name+'wf']
         # col = to_hex(color)
         #material = MeshLambertMaterial(color=col, opacity=opacity)
+        color2 = Rgba(0.8*color.r(), 0.8*color.g(), 0.8*color.b(), color.a())
         meshcat.SetObject(name, TriangleSurfaceMesh(tri_drake, verts+offset.reshape(-1,3)),
                                 color, wireframe=False)
         meshcat.SetObject(name+'wf', TriangleSurfaceMesh(tri_drake, verts+offset.reshape(-1,3)),
-                                color, wireframe=True)
+                                color2, wireframe=True)
         # #obj.set_object(TriangularMeshGeometry(verts, triangles), material)
         # material = MeshLambertMaterial(color=col, opacity=0.95, wireframe=True)
         # objwf.set_object(TriangularMeshGeometry(verts, triangles), material)

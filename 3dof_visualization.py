@@ -34,7 +34,7 @@ from visibility_logging import CliqueApproachLogger
 import os
 import pickle
 
-N = 500
+N = 100
 eps = 0.1
 approach = 1
 ap_names = ['redu', 'greedy', 'nx']
@@ -135,6 +135,10 @@ _offset_meshcat_2 = np.array([-1,-5, 1.5])
 col_func_handle2 = get_col_func(plant, plant_context, min_dist=0.001)
 def check_collision_by_ik(q0,q1,q2, min_dist=1e-5):
     q = np.array([q0,q1,q2])
+    if np.any(q>q_max):
+        return 1
+    if np.any(q<q_min):
+        return 1
     return 1.*col_func_handle2(q) 
 
 snopt_iris_options = IrisOptions()
@@ -147,40 +151,50 @@ snopt_iris_options.relative_termination_threshold =relative_termination_threshol
 
 
 
-    # iris_handle = partial(SNOPT_IRIS_ellipsoid, 
-    #                     region_obstacles = [],
-    #                     logger = None, 
-    #                     plant = plant, 
-    #                     context = diagram_context,
-    #                     snoptiris_options = snopt_iris_options,
-    #                     estimate_coverage = estimate_coverage,
-    #                     coverage_threshold = 1- eps)
+iris_handle = partial(SNOPT_IRIS_ellipsoid, 
+                    region_obstacles = [],
+                    logger = None, 
+                    plant = plant, 
+                    context = diagram_context,
+                    snoptiris_options = snopt_iris_options,
+                    estimate_coverage = estimate_coverage,
+                    coverage_threshold = 1- eps)
 
-    # vgraph_handle = partial(vgraph, checker = checker, parallelize = True) 
-    # clogger = CliqueApproachLogger(f"3dof_flipper2_",f"{ap_names[approach]}",  estimate_coverage=estimate_coverage, cfg_dict=cfg)
+vgraph_handle = partial(vgraph, checker = checker, parallelize = True) 
+#clogger = CliqueApproachLogger(f"3dof_flipper2_",f"{ap_names[approach]}",  estimate_coverage=estimate_coverage, cfg_dict=cfg)
 
-    # vcd = VisCliqueDecomp(N, 
-    #                 eps,
-    #                 max_iterations=max_iterations_clique,
-    #                 sample_cfree = sample_cfree,
-    #                 col_handle= col_func_handle_,
-    #                 build_vgraph=vgraph_handle,
-    #                 iris_w_obstacles=iris_handle,
-    #                 verbose = True,
-    #                 logger=clogger,
-    #                 approach=approach
-    #                 )
-    # regs = vcd.run()
+# vcd = VisCliqueDecomp(N, 
+#                 eps,
+#                 max_iterations=max_iterations_clique,
+#                 sample_cfree = sample_cfree,
+#                 col_handle= col_func_handle_,
+#                 build_vgraph=vgraph_handle,
+#                 iris_w_obstacles=iris_handle,
+#                 verbose = True,
+#                 logger=clogger,
+#                 approach=approach
+#                 )
+# regs = vcd.run()
+
+#with open('logs/experiment_3dof_flipper__1_500_0.100greedy20230905161943/data/it_0.pkl', 'rb') as f:
+with open('logs/3DOf_pinball_naive_1it_20230917190637_9_1_0.050_0.100/data/it_40.pkl', 'rb') as f:
+    #3DOf_pinball_naive_1it_20230917190637_9_1_0.050_0.100
+    #3DOf_pinball_naive_20230830155947_0_1_0.050_0.100
+    data = pickle.load(f)
+
+regionsIOS = []
+for rga, rgb in zip(data['ra'], data['rb']):
+    for ra, rb in zip(rga, rgb):
+        regionsIOS.append(HPolyhedron(ra, rb))
 
 with open('logs/experiment_3dof_flipper__1_500_0.100greedy20230905161943/data/it_0.pkl', 'rb') as f:
     data = pickle.load(f)
 
-regions = []
-
+regionsCBS = []
 for rga, rgb in zip(data['ra'], data['rb']):
     for ra, rb in zip(rga, rgb):
-        regions.append(HPolyhedron(ra, rb))
-    
+        regionsCBS.append(HPolyhedron(ra, rb))
+
 def plot_collision_constraint(N = 50, q_min = q_min, q_max= q_max):
     if f"col_cons{N}.pkl" in os.listdir('tmp'):
         with open(f"tmp/col_cons{N}.pkl", 'rb') as f:
@@ -190,8 +204,8 @@ def plot_collision_constraint(N = 50, q_min = q_min, q_max= q_max):
     else:  
         vertices, triangles = mcubes.marching_cubes_func(
         tuple(
-                q_min), tuple(
-                q_max), N, N, N, check_collision_by_ik, 0.5)
+                q_min-0.2), tuple(
+                q_max+0.2), N, N, N, check_collision_by_ik, 0.5)
         with open(f"tmp/col_cons{N}.pkl", 'wb') as f:
                 d = {'vertices': vertices, 'triangles': triangles}
                 pickle.dump(d, f)
@@ -199,10 +213,14 @@ def plot_collision_constraint(N = 50, q_min = q_min, q_max= q_max):
     tri_drake = [SurfaceTriangle(*t) for t in triangles]
 
     vertices += _offset_meshcat_2.reshape(-1,3)
-    meshcat.SetObject("/collision_constraint",
+    meshcat.SetObject("/collision_constraint/c1",
                                     TriangleSurfaceMesh(tri_drake, vertices),
-                                    Rgba(1, 0, 0, 1), wireframe=True)
-        
+                                    Rgba(0, 0.6, 0, 0.2))
+    meshcat.SetObject("/collision_constraint/c2",
+                                    TriangleSurfaceMesh(tri_drake, vertices),
+                                    Rgba(0, 0.6, 0, 1), wireframe = True)
+    
+plot_collision_constraint(110)
 def plot_points(points, name, size = 0.05, color = Rgba(0.06, 0.0, 0, 1)):
     for i, pt in enumerate(points):
         n_i = name+f"/pt{i}"
@@ -258,20 +276,233 @@ def get_edges_clique(cl, points):
         for c2 in cl[i+1:]:
             e.append([points[c1, :], points[c2,:]])
     return e
-#plot_edges(edges, 'evgraph', Rgba(0,1,1,1))
-#plot_points(points, size=0.1, name = 'a')
-plot_collision_constraint(100)
+
+def plot_edges_vgraph(ad, pts):
+    edges = []
+    for i in range(ad.shape[0]):
+        for j in range(i+1, ad.shape[0]):
+        
+            if ad[i,j]==1 and np.random.rand()>0.05:
+               plot_edge(pts[i,:]+_offset_meshcat_2, pts[j, :]+_offset_meshcat_2, "vgraph" + f"/e_{i}{j}", color= Rgba(0,0,0,0.9), size=0.005) #edges.append([pts[i,:], pts[j,:]])
+    return edges
 
 # clique_edges = []
 # for cl_lst, pts_cl in zip(vcd.cliques, vcd.vgraph_points):
 #     for c in cl_lst:
 #         clique_edges.append(get_edges_clique(c, pts_cl))
+
+
+# plot_points(vcd.vgraph_points[0], size=0.05, name = 'a')
+# plot_edges_vgraph(vcd.vgraph_admat[0], vcd.vgraph_points[0])
+
 from visualization_utils import generate_maximally_different_colors, plot_regions, plot_ellipses
+#plot_edges(edges, 'evgraph', Rgba(0,1,1,1))
+#plot_collision_constraint(110)
 
 # colors = [Rgba(c[0], c[1], c[2], 1.) for c in generate_maximally_different_colors(len(clique_edges))]
+# colors2 = [[c.r(),c.g(), c.b()] for c in colors ]
 # for i,c in enumerate(clique_edges):
 #     plot_edges(c+_offset_meshcat_2, f"cl_{i}", color=colors[i])
-plot_regions(meshcat, regions, offset=_offset_meshcat_2, opacity=.45)
+# #for i,c in enumerate(clique_edges):
+#     plot_edges(c+_offset_meshcat_2, f"vg_{i}", color=colors[i])
+plot_regions(meshcat, regionsIOS,region_suffix='IOS', offset=_offset_meshcat_2, opacity=.9)
+plot_regions(meshcat, regionsCBS,region_suffix='CBS', offset=_offset_meshcat_2, opacity=.9)
+
+#plot_regions(meshcat, vcd.regions,region_suffix='CBS', offset=_offset_meshcat_2, opacity=.9, colors = colors)
+def conv_dummy(q):
+    return q
+
+import dijkstraspp
+dspp = dijkstraspp.DijkstraSPPsolver(regionsCBS, conv_dummy)
+import pydrake
+from pydrake.all import Rgba, Sphere, RotationMatrix, Box
+def densify_waypoints(waypoints_q):
+    densify = 100
+    dists = []
+    dense_waypoints = []
+    for idx in range(len(waypoints_q[:-1])):
+        a = waypoints_q[idx]
+        b = waypoints_q[idx+1]
+        t = np.linspace(1,0, 10)
+        locs_endeff = []
+        locs_endeff2 = []
+        dists_endeff = []
+        for tval in t:
+            qa = a*tval + b*(1-tval)
+            #qa = Ratfk.ComputeQValue(ta, np.zeros(7))
+            #showres(qa)
+            #time.sleep(0.1)            
+            plant.SetPositions(plant_context, qa)
+            #visualizer.set_joint_angles(qa)
+            tf_tot= plant.EvalBodyPoseInWorld(plant_context, plant.get_body(pydrake.multibody.tree.BodyIndex(12)))
+            tf = tf_tot.translation() + tf_tot.GetAsMatrix4()[:3,:3][:,1] *0.15
+            tf_tot= plant.EvalBodyPoseInWorld(plant_context, plant.get_body(pydrake.multibody.tree.BodyIndex(20)))
+            tf2 = tf_tot.translation() + tf_tot.GetAsMatrix4()[:3,:3][:,1] *0.15
+            locs_endeff.append(tf)
+            locs_endeff2.append(tf2)
+        for i in range(len(locs_endeff)-1):
+            dists_endeff.append(0.5*np.linalg.norm(locs_endeff[i]- locs_endeff[i+1]) + 0.5*np.linalg.norm(locs_endeff2[i]- locs_endeff2[i+1]))
+        d = np.sum(dists_endeff)
+        #print(d * densify)
+        t = np.linspace(1,0,int(densify*d))
+        for tval in t:
+            dense_waypoints.append(waypoints_q[idx]*tval + waypoints_q[idx+1]*(1-tval))
+    return dense_waypoints
+
+def hide_traj(name, anim, frame):
+    for i in range(200):
+        anim.SetTransform(frame,name + str(i), RigidTransform(
+                            RotationMatrix(), 
+                            np.array([0,0,1000])))
+        
+def prepare_traj_plotting():
+    color = Rgba(1,0,0,1.0)
+    color2 = Rgba(0,0,1,1.0)
+    color3 = Rgba(0,1,1,1.0)
+    for idx in range(200):
+        meshcat.SetObject(f"/points/traj/{idx}",
+                                Sphere(0.01),
+                                color)
+        meshcat.SetObject(f"/points/traj2/{idx}",
+                               Sphere(0.01),
+                               color2)
+        meshcat.SetObject(f"/points/traj3/{idx}",
+                               Sphere(0.025),
+                               color3)
+
+def plot_endeff_traj(dense_waypoints, frame, anim, opt = True):
+    
+    start_idx = 0
+    for i, qa in enumerate(dense_waypoints[::2]):
+        
+        #showres(qa)
+        #time.sleep(0.1)            
+        plant.SetPositions(plant_context,qa)
+        tf_tot= plant.EvalBodyPoseInWorld(plant_context, plant.get_body(pydrake.multibody.tree.BodyIndex(12)))
+        tf = tf_tot.translation() + tf_tot.GetAsMatrix4()[:3,:3][:,1] *0.15
+
+        # meshcat.SetObject(f"/points/traj/{i+start_idx}",
+        #                        Sphere(0.005),
+        #                        color)
+
+        anim.SetTransform(frame, f"/points/traj/{i+start_idx}",
+                                   RigidTransform(RotationMatrix(),
+                                                  tf))
+        
+        tf_tot= plant.EvalBodyPoseInWorld(plant_context, plant.get_body(pydrake.multibody.tree.BodyIndex(20)))
+        tf = tf_tot.translation() + tf_tot.GetAsMatrix4()[:3,:3][:,1] *0.15
+
+        # meshcat.SetObject(f"/points/traj2/{i+start_idx}",
+        #                        Sphere(0.005),
+        #                        color2)
+
+        anim.SetTransform(frame,  f"/points/traj2/{i+start_idx}",
+                                   RigidTransform(RotationMatrix(),
+                                                  tf))
+        
+        # meshcat.SetObject(f"/points/traj3/{i+start_idx}",
+        #                        Sphere(0.02),
+        #                        color3)
+
+        anim.SetTransform(frame, f"/points/traj3/{i+start_idx}",
+                                   RigidTransform(RotationMatrix(),
+                                                  qa+_offset_meshcat_2))
+
+from visibility_utils import point_in_regions
+def sample_point_in_regions(regions):
+    while True:
+        pt = sample_cfree(1,1000, [])[0].reshape(-1,)
+        if point_in_regions(pt,regions):
+            return pt
+
+meshcat.SetObject('config',
+                Sphere(0.05),
+                Rgba(0,1,1,1))
+
+def showres(q, frame, anim):
+    plant.SetPositions(plant_context, q)
+    # meshcat.SetObject('config',
+    #                       Sphere(0.05),
+    #                       Rgba(0,1,1,1))
+    
+    anim.SetTransform(frame, 'config', 
+                            RigidTransform(
+                            RotationMatrix(), 
+                            np.array(q)+_offset_meshcat_2.reshape(-1)))
+    diagram.ForcedPublish(diagram_context)
+
+import time
+from pydrake.all import Mesh
+a = Mesh('3dofsign.gltf')
+meshcat.SetObject('/instructionsign', a)
+meshcat.SetTransform('/instructionsign',RigidTransform(
+                            RotationMatrix.MakeZRotation(-np.pi/2)@RotationMatrix.MakeXRotation(-np.pi/2), 
+                            np.array([0, 15 , 0])))
+# from meshcat.geometry import MeshLambertMaterial, ImageTexture, PngImage
+
+# image_path = 'sign.png'
+# texture = ImageTexture(image = PngImage.from_file(image_path))
+# textured_material = MeshLambertMaterial(map=texture)
+# meshcat.SetProperty('/drake/sign', "material", [textured_material])
+start = sample_point_in_regions(regionsCBS)
+
+meshcat.SetProperty(f"/iris/regionsIOS", "visible", False)
+meshcat.SetProperty(f"/iris/regionsCBS", "visible", True)
+meshcat.SetProperty(f"/iris", "visible", False)
+#meshcat.SetProperty(f"/Background", "visible", False)
+#meshcat.SetProperty(f"/collision_constraint", "visible", False)
+meshcat.SetProperty(f"/collision_constraint/c1", "visible", False)
+meshcat.SetProperty(f"/Grid", "visible", False)
+frame_time = 1/32.0
+cur_time = 0
+
+prepare_traj_plotting()
+meshcat.StartRecording()
+animation = meshcat.get_mutable_recording()
+hide_traj('/points/traj/',animation, 0)
+hide_traj('/points/traj2/',animation, 0)
+hide_traj('/points/traj3/',animation, 0)
+
+frame = 0
+for idx in range(9):
+    #nxt = vs.sample_in_regions() #
+    while True:
+        nxt = sample_point_in_regions(regionsCBS)
+        if nxt[0] != start[0]:
+            break
+    wp, dist = dspp.solve(start, nxt, refine_path=True)#dijkstra_spp(start, nxt, node_intersections, base_ad_mat, vs.regions, point_conversion, optimize= True)
+    print(dist)
+    if dist >0:
+        dense_waypoints = densify_waypoints(wp)
+        plot_endeff_traj(dense_waypoints,frame, animation)
+        for qa in dense_waypoints[::2]:
+            diagram_context.SetTime(cur_time)
+            showres(qa, frame, animation)
+            plot_endeff_traj(dense_waypoints,frame, animation)
+            # if visualizer.col_func_handle(qa):
+            #     #print(col)
+            #     break
+            time.sleep(frame_time)
+            cur_time+=frame_time
+            frame+= 1
+        start = nxt
+        hide_traj("/points/traj/", animation ,frame)
+        hide_traj("/points/traj2/", animation ,frame)
+        hide_traj("/points/traj3/", animation ,frame)
+        time.sleep(10*frame_time)
+        cur_time+=10*frame_time
+        frame+=10
+        hide_traj("/points/traj/", animation ,frame)
+        hide_traj("/points/traj2/", animation ,frame)
+        hide_traj("/points/traj3/", animation ,frame)
+    else:
+        nxt = sample_point_in_regions(regionsCBS)
+meshcat.StopRecording()
+animation.set_autoplay(True)
+meshcat.PublishRecording()
+with open("3dofsys.html", "w+") as f:
+    f.write(meshcat.StaticHtml())
+print('done')
 # from meshcat.transformations import translation_matrix, rotation_matrix
 # sign_size = [20.4, 20.2]  # Width and height of the sign
 # sign_position = [-20.0, 0.0, 10.0]  # X, Y, Z position of the sign
@@ -295,10 +526,10 @@ plot_regions(meshcat, regions, offset=_offset_meshcat_2, opacity=.45)
 # meshcat.SetTransform('sign', RigidTransform(
 #                         RotationMatrix(rot), 
 #                         np.array(sign_position)))
-static_html = meshcat.StaticHtml()
-with open('3dofflipper.html', 'w') as f:
-    f.write(static_html)
-print('a')
+# static_html = meshcat.StaticHtml()
+# with open('3doffliadpper.html', 'w') as f:
+#     f.write(static_html)
+# print('a')
 
 #ellipses = [] 
 # for g in vcd.metrics_iteration:

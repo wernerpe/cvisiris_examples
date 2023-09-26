@@ -107,6 +107,7 @@ def compute_outer_LJ_sphere(pts):
     return HE
 
 from pydrake.all import GurobiSolver
+
 def max_clique_w_cvx_hull_constraint(adj_mat, graph_vertices, c = None):
     assert adj_mat.shape[0] == len(graph_vertices)
     #assert graph_vertices[0, :].shape[0] == points_to_exclude.shape[1]

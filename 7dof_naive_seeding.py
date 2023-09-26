@@ -41,7 +41,7 @@ from pydrake.all import (SceneGraphCollisionChecker,
 
 
 # seed = 1
-for seed in [50]:
+for seed in [57]:
     np.random.seed(seed)
     def plant_builder(usemeshcat = False):
         if usemeshcat:

@@ -107,7 +107,7 @@ for seed in range(10):
 
     snopt_iris_options = IrisOptions()
     snopt_iris_options.require_sample_point_is_contained = True
-    snopt_iris_options.iteration_limit = 10
+    snopt_iris_options.iteration_limit = 1
     snopt_iris_options.configuration_space_margin = 1.0e-4
     #snopt_iris_options.max_faces_per_collision_pair = 60
     snopt_iris_options.termination_threshold = -1
@@ -147,7 +147,7 @@ for seed in range(10):
     #approach = 0
     #ap_names = ['redu', 'greedy', 'nx']
 
-    logger = Logger(f"3DOf_pinball_naive", seed, N, alpha, eps, estimate_coverage)
+    logger = Logger(f"3DOf_pinball_naive_1it", seed, N, alpha, eps, estimate_coverage)
     iris_handle = partial(SNOPT_IRIS_obstacles, 
                         logger = logger, 
                         plant = plant, 
