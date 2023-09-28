@@ -161,23 +161,10 @@ iris_handle = partial(SNOPT_IRIS_ellipsoid,
                     coverage_threshold = 1- eps)
 
 vgraph_handle = partial(vgraph, checker = checker, parallelize = True) 
-#clogger = CliqueApproachLogger(f"3dof_flipper2_",f"{ap_names[approach]}",  estimate_coverage=estimate_coverage, cfg_dict=cfg)
 
-# vcd = VisCliqueDecomp(N, 
-#                 eps,
-#                 max_iterations=max_iterations_clique,
-#                 sample_cfree = sample_cfree,
-#                 col_handle= col_func_handle_,
-#                 build_vgraph=vgraph_handle,
-#                 iris_w_obstacles=iris_handle,
-#                 verbose = True,
-#                 logger=clogger,
-#                 approach=approach
-#                 )
-# regs = vcd.run()
 
 #with open('logs/experiment_3dof_flipper__1_500_0.100greedy20230905161943/data/it_0.pkl', 'rb') as f:
-with open('logs/3DOf_pinball_naive_1it_20230917190637_9_1_0.050_0.100/data/it_40.pkl', 'rb') as f:
+with open('logs_icra_paper/3DOf_pinball_naive_1it_20230917190637_9_1_0.050_0.100/data/it_40.pkl', 'rb') as f:
     #3DOf_pinball_naive_1it_20230917190637_9_1_0.050_0.100
     #3DOf_pinball_naive_20230830155947_0_1_0.050_0.100
     data = pickle.load(f)
@@ -187,7 +174,7 @@ for rga, rgb in zip(data['ra'], data['rb']):
     for ra, rb in zip(rga, rgb):
         regionsIOS.append(HPolyhedron(ra, rb))
 
-with open('logs/experiment_3dof_flipper__1_500_0.100greedy20230905161943/data/it_0.pkl', 'rb') as f:
+with open('logs_icra_paper/experiment_3dof_flipper__1_500_0.100greedy20230905161943/data/it_0.pkl', 'rb') as f:
     data = pickle.load(f)
 
 regionsCBS = []
@@ -433,17 +420,12 @@ def showres(q, frame, anim):
 
 import time
 from pydrake.all import Mesh
-a = Mesh('3dofsign.gltf')
+a = Mesh('display_signs/3dofsign.gltf')
 meshcat.SetObject('/instructionsign', a)
 meshcat.SetTransform('/instructionsign',RigidTransform(
                             RotationMatrix.MakeZRotation(-np.pi/2)@RotationMatrix.MakeXRotation(-np.pi/2), 
                             np.array([0, 15 , 0])))
-# from meshcat.geometry import MeshLambertMaterial, ImageTexture, PngImage
 
-# image_path = 'sign.png'
-# texture = ImageTexture(image = PngImage.from_file(image_path))
-# textured_material = MeshLambertMaterial(map=texture)
-# meshcat.SetProperty('/drake/sign', "material", [textured_material])
 start = sample_point_in_regions(regionsCBS)
 
 meshcat.SetProperty(f"/iris/regionsIOS", "visible", False)
@@ -500,62 +482,7 @@ for idx in range(9):
 meshcat.StopRecording()
 animation.set_autoplay(True)
 meshcat.PublishRecording()
-with open("3dofsys.html", "w+") as f:
+with open("static_htmls/3dofsys.html", "w+") as f:
     f.write(meshcat.StaticHtml())
 print('done')
-# from meshcat.transformations import translation_matrix, rotation_matrix
-# sign_size = [20.4, 20.2]  # Width and height of the sign
-# sign_position = [-20.0, 0.0, 10.0]  # X, Y, Z position of the sign
-# sign_color = [0.7, 0.7, 0.7]  # RGB color for the sign
-# from meshcat.geometry import MeshLambertMaterial, ImageTexture, Box
-# import meshcat as mc
-# # Add the sign as a rectangle
 
-# # Load an image to put on the sign
-# image_path = "sign3dof.png"
-
-# # Create a textured material for the sign
-# texture = ImageTexture(image = mc.geometry.PngImage.from_file(image_path))
-# textured_material = MeshLambertMaterial(map=texture)
-# sign = Box((sign_size[0], sign_size[1], 0.1))
-# meshcat.SetObject('sign', sign, textured_material)
-# transl = translation_matrix(sign_position)
-# rot = rotation_matrix(np.pi/2, [1,0,0])[:3,:3]
-# rot = rot@rotation_matrix(np.pi/2, [0,1,0])[:3,:3]
-# rot[:,3] = transl[:,3]
-# meshcat.SetTransform('sign', RigidTransform(
-#                         RotationMatrix(rot), 
-#                         np.array(sign_position)))
-# static_html = meshcat.StaticHtml()
-# with open('3doffliadpper.html', 'w') as f:
-#     f.write(static_html)
-# print('a')
-
-#ellipses = [] 
-# for g in vcd.metrics_iteration:
-#     for e in g:
-#         ellipses.append(e)
-# colors = [Rgba(c[0], c[1], c[2], 0.8) for c in generate_maximally_different_colors(len(ellipses)+5)[5:]]   
-
-
-# plot_ellipses(meshcat, ellipses,'LJe', colors, offset=_offset_meshcat_2)
-
-# idx_c = 0
-# ell = ellipses[idx_c]
-# points = vcd.vgraph_points[0][vcd.cliques[0][idx_c]]
-
-# pts_cl =vcd.vgraph_points[0][vcd.cliques[0][4], :]
-# e_crit = Hyperellipsoid.MinimumVolumeCircumscribedEllipsoid(pts_cl.T)
-# plot_points(pts_cl, size = 0.1, name ='a')
-# plot_ellipses(meshcat, [e_crit],'a', [colors[0]], offset=_offset_meshcat_2)
-# q_min = np.min(pts_cl, axis=0)
-# q_max = np.max(pts_cl, axis=0)
-# diff= q_max-q_min
-# pts_e = []
-# for _ in range(2000):
-#     r = q_min+diff*np.random.rand(3)
-#     if e_crit.PointInSet(r):
-#         pts_e.append(r)
-# plot_points(np.array(pts_e), size = 0.05, name = 'b')
-#plot_regions(meshcat, vcd.regions, offset=_offset_meshcat_2, resolution=30)
-print('')
