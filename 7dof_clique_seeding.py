@@ -8,7 +8,7 @@ from pydrake.all import (SceneGraphCollisionChecker)
 from pydrake.geometry.optimization import IrisOptions#, HPolyhedron, Hyperellipsoid
 from environments import get_environment_builder
 from visibility_logging import CliqueApproachLogger
-from visibility_clique_decomposition import VisCliqueDecomp
+from visibility_clique_decomposition import VisCliqueInflation
 from region_generation import SNOPT_IRIS_ellipsoid_parallel
     
 N = 200
@@ -90,7 +90,7 @@ for seed in range(1):
                         estimate_coverage = estimate_coverage,
                         coverage_threshold = 1- eps)
 
-    vcd = VisCliqueDecomp(N, 
+    vcd = VisCliqueInflation(N, 
                     eps,
                     max_iterations=max_iterations_clique,
                     sample_cfree = sample_cfree,

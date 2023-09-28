@@ -28,7 +28,7 @@ from visibility_utils import (get_col_func,
                               get_coverage_estimator,
                               point_in_regions
                               )
-from visibility_seeding import VisSeeder
+from hidden_point_seeding import HiddenPointSeeder
 from visibility_logging import Logger
 from scipy.sparse import lil_matrix
 from tqdm import tqdm
@@ -122,7 +122,7 @@ for seed in [29]:
                         estimate_coverage = estimate_coverage,
                         coverage_threshold = 1- eps)
 
-    VS = VisSeeder(N = N,
+    VS = HiddenPointSeeder(N = N,
                     alpha = alpha,
                     eps = eps,
                     max_iterations = 1000,

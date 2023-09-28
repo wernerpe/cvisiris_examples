@@ -10,7 +10,7 @@ from pydrake.all import HPolyhedron, Hyperellipsoid
 # import networkx as nx
 
 
-class VisCliqueDecomp:
+class VisCliqueInflation:
     def __init__(self,
                  N = 400, #computational cost per iteration
                  eps = 0.05, #bernoulli test parameter 2

@@ -3,7 +3,7 @@ from functools import partial
 import numpy as np
 from pydrake.all import SceneGraphCollisionChecker
 from region_generation import SNOPT_IRIS_ellipsoid
-from visibility_clique_decomposition import VisCliqueDecomp
+from visibility_clique_decomposition import VisCliqueInflation
 from visibility_utils import (get_col_func, 
                               get_sample_cfree_handle,
                               get_coverage_estimator,
@@ -83,7 +83,7 @@ for seed in range(1):
     vgraph_handle = partial(vgraph, checker = checker, parallelize = True) 
     clogger = CliqueApproachLogger(f"3dof_flipper_",f"{ap_names[approach]}",  estimate_coverage=estimate_coverage, cfg_dict=cfg)
 
-    vcd = VisCliqueDecomp(N, 
+    vcd = VisCliqueInflation(N, 
                     eps,
                     max_iterations=max_iterations_clique,
                     sample_cfree = sample_cfree,

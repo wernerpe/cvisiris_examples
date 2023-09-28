@@ -25,7 +25,7 @@ import numpy as np
 from pydrake.planning import RobotDiagramBuilder
 from pydrake.all import SceneGraphCollisionChecker
 from region_generation import SNOPT_IRIS_ellipsoid
-from visibility_clique_decomposition import VisCliqueDecomp
+from visibility_clique_decomposition import VisCliqueInflation
 from visibility_utils import (get_col_func, 
                               get_sample_cfree_handle,
                               get_coverage_estimator,

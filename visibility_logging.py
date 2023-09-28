@@ -1,15 +1,17 @@
 import os
 import matplotlib.pyplot as plt
 import numpy as np
-from visibility_seeding import VisSeeder
+from hidden_point_seeding import HiddenPointSeeder
 import pickle, yaml
 import time
 from datetime import datetime
 import networkx as nx
-from visibility_utils import generate_distinct_colors, shrink_regions
+from visibility_utils import generate_distinct_colors#, shrink_regions
 from pydrake.all import HPolyhedron
-from visibility_clique_decomposition import VisCliqueDecomp
-root = "/home/peter/git/cvisiris_examples"
+#from visibility_clique_decomposition import VisCliqueInflation
+
+root = f"{os.path.dirname(os.path.abspath(''))}/cvisiris_examples"
+
 class Logger:
     def __init__(self, experiment_name, seed, N, alpha, eps, estimate_coverage):
         
@@ -52,7 +54,7 @@ class Logger:
         with open(self.summary_file, 'a') as f:
             f.write(string +'\n')
 
-    def log(self, vs: VisSeeder, iteration):
+    def log(self, vs: HiddenPointSeeder, iteration):
         #self.timings.append(time.time())
         t_sample = self.timings[-4] - self.timings[-5] 
         t_visgraph = self.timings[-3] - self.timings[-4] 

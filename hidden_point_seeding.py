@@ -5,7 +5,7 @@ from time import strftime,gmtime
 import pickle
 from pydrake.all import HPolyhedron
 
-class VisSeeder:
+class HiddenPointSeeder:
     def __init__(self,
                  N = 400, #computational cost per iteration
                  alpha = 0.05, #bernoulli test confidence
@@ -32,8 +32,8 @@ class VisSeeder:
         self.maxit = max_iterations
         self.M = 10000#int(np.log(1-(1-alpha)**(1/N))/np.log((1-eps)) + 0.5)
         if self.vb: 
-            print(strftime("[%H:%M:%S] ", gmtime()) +'[VisSeeder] Point Insertion attempts M:', str(self.M))
-            print(strftime("[%H:%M:%S] ", gmtime()) +f"[VisSeeder] {1-self.alpha:.2f} probability that unseen region is less than {100*eps:.1f} '%' of Cfree ")
+            print(strftime("[%H:%M:%S] ", gmtime()) +'[HiddenPointSeeder] Point Insertion attempts M:', str(self.M))
+            print(strftime("[%H:%M:%S] ", gmtime()) +f"[HiddenPointSeeder] {1-self.alpha:.2f} probability that unseen region is less than {100*eps:.1f} '%' of Cfree ")
         
         self.vgraph_points = []
         self.vgraph_admat = []
@@ -50,9 +50,9 @@ class VisSeeder:
             points, b_test_is_full = self.sample_cfree(self.N, self.M, self.regions)
             self.vgraph_points.append(points)
             # if b_test_is_full:
-            #     if self.vb : print(strftime("[%H:%M:%S] ", gmtime()) +'[VisSeeder] Bernoulli test failed')
+            #     if self.vb : print(strftime("[%H:%M:%S] ", gmtime()) +'[HiddenPointSeeder] Bernoulli test failed')
             #     done = True 
-            #     if self.logger is not None: self.logger.log_string(strftime("[%H:%M:%S] ", gmtime()) +'[VisSeeder] Bernoulli test failed')
+            #     if self.logger is not None: self.logger.log_string(strftime("[%H:%M:%S] ", gmtime()) +'[HiddenPointSeeder] Bernoulli test failed')
             #     return self.regions
             if self.logger is not None: self.logger.time()
 
@@ -65,7 +65,7 @@ class VisSeeder:
             #solve MHS
             _, mhs_idx = solve_max_independent_set_integer(ad_mat)
             self.seed_points +=[points[mhs_idx, :].squeeze()]
-            if self.vb : print(strftime("[%H:%M:%S] ", gmtime()) +'[VisSeeder] Found ', len(mhs_idx), ' hidden points')
+            if self.vb : print(strftime("[%H:%M:%S] ", gmtime()) +'[HiddenPointSeeder] Found ', len(mhs_idx), ' hidden points')
             if self.logger is not None: self.logger.time()
 
             #grow the regions with obstacles
@@ -75,11 +75,11 @@ class VisSeeder:
             if self.logger is not None: self.logger.time()
             if self.logger is not None: self.logger.log(self, it)
             if is_full_iris and self.terminate_on_iris_step:
-                print(strftime("[%H:%M:%S] ", gmtime()) +'[VisSeeder] Coverage met, terminated on Iris step')
-                if self.logger is not None: self.logger.log_string(strftime("[%H:%M:%S] ", gmtime()) +'[VisSeeder] Coverage met, terminated on Iris step')
+                print(strftime("[%H:%M:%S] ", gmtime()) +'[HiddenPointSeeder] Coverage met, terminated on Iris step')
+                if self.logger is not None: self.logger.log_string(strftime("[%H:%M:%S] ", gmtime()) +'[HiddenPointSeeder] Coverage met, terminated on Iris step')
                 return self.regions
             it+=1
-        if self.logger is not None: self.logger.log_string(strftime("[%H:%M:%S] ", gmtime()) +'[VisSeeder] Maxit reached')
+        if self.logger is not None: self.logger.log_string(strftime("[%H:%M:%S] ", gmtime()) +'[HiddenPointSeeder] Maxit reached')
         return self.regions
     
     def save_state(self, path):

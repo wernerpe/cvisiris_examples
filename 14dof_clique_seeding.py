@@ -18,7 +18,7 @@ import os
 from functools import partial
 
 from visibility_logging import CliqueApproachLogger
-from visibility_clique_decomposition import VisCliqueDecomp
+from visibility_clique_decomposition import VisCliqueInflation
 from region_generation import SNOPT_IRIS_ellipsoid, SNOPT_IRIS_ellipsoid_parallel
 
 seed = 1
@@ -146,7 +146,7 @@ iris_handle = partial(SNOPT_IRIS_ellipsoid_parallel,
                       estimate_coverage = estimate_coverage,
                       coverage_threshold = 1- eps)
 
-vcd = VisCliqueDecomp(N, 
+vcd = VisCliqueInflation(N, 
                 eps,
                 max_iterations=max_iterations_clique,
                 sample_cfree = sample_cfree,
