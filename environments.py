@@ -104,6 +104,49 @@ def plant_builder_7dof_iiwa(usemeshcat = False):
     diagram.ForcedPublish(diagram_context)
     return plant, scene_graph, diagram, diagram_context, plant_context, meshcat if usemeshcat else None
 
+def environment_builder_14dof_iiwas(usemeshcat = False):
+    builder = RobotDiagramBuilder()
+    if usemeshcat: meshcat = StartMeshcat()
+    # if export_sg_input:
+    #     scene_graph = builder.AddSystem(SceneGraph())
+    #     plant = MultibodyPlant(time_step=0.0)
+    #     plant.RegisterAsSourceForSceneGraph(scene_graph)
+    #     builder.ExportInput(scene_graph.get_source_pose_port(plant.get_source_id()), "source_pose")
+    # else:
+    plant = builder.plant()
+    scene_graph = builder.scene_graph()# AddMultibodyPlantSceneGraph(builder, time_step=0.0)
+
+    parser = builder.parser()
+    parser.package_map().Add("bimanual", os.path.dirname(os.path.dirname(os.path.realpath(__file__)))+"/cvisiris_examples/assets_bimanual")
+
+    directives = LoadModelDirectives("assets_bimanual/models/bimanual_iiwa_with_shelves.yaml")
+    models = ProcessModelDirectives(directives, plant, parser)
+
+    plant.Finalize()
+    if usemeshcat:
+        meshcat_visual_params = MeshcatVisualizerParams()
+        meshcat_visual_params.delete_on_initialization_event = False
+        meshcat_visual_params.role = Role.kIllustration
+        meshcat_visual_params.prefix = "visual"
+        meshcat_visual = MeshcatVisualizer.AddToBuilder(
+            builder.builder(), scene_graph, meshcat, meshcat_visual_params)
+
+        meshcat_collision_params = MeshcatVisualizerParams()
+        meshcat_collision_params.delete_on_initialization_event = False
+        meshcat_collision_params.role = Role.kProximity
+        meshcat_collision_params.prefix = "collision"
+        meshcat_collision_params.visible_by_default = False
+        meshcat_collision = MeshcatVisualizer.AddToBuilder(
+            builder.builder(), scene_graph, meshcat, meshcat_collision_params)
+
+
+    diagram = builder.Build()
+    diagram_context = diagram.CreateDefaultContext()
+    plant_context = plant.GetMyContextFromRoot(diagram_context)
+    diagram.ForcedPublish(diagram_context)
+    scene_graph_context = scene_graph.GetMyMutableContextFromRoot(
+        diagram_context)
+    return plant, scene_graph, diagram, diagram_context, plant_context, meshcat if usemeshcat else None
 
 def get_environment_builder(environment_name):
     valid_names = ['3DOFFLIPPER', '5DOFUR5', '7DOFIIWA']
@@ -115,4 +158,6 @@ def get_environment_builder(environment_name):
         return plant_builder_5dof_ur5
     elif environment_name == '7DOFIIWA':
         return plant_builder_7dof_iiwa
+    elif environment_name == '14DOFIIWAS':
+        return environment_builder_14dof_iiwas
     return None
