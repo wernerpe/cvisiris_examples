@@ -1,26 +1,9 @@
-import os
-import pickle
 import numpy as np
-from pydrake.all import (#PiecewisePolynomial, 
-                        #InverseKinematics, 
-                        Sphere, 
-                        Cylinder,
-                        Rgba, 
-                        RigidTransform, 
-                        RotationMatrix, 
-                        #IrisInConfigurationSpace, 
-                        RollPitchYaw,
-                        StartMeshcat,
-                        MeshcatVisualizerParams,
-                        MeshcatVisualizer,
-                        Role,
-                        TriangleSurfaceMesh,
-                        SurfaceTriangle,
+from pydrake.all import (
                         IrisOptions
                         )
 from functools import partial
 import numpy as np
-from pydrake.planning import RobotDiagramBuilder
 from pydrake.all import SceneGraphCollisionChecker
 from region_generation import SNOPT_IRIS_obstacles
 from visibility_utils import (get_col_func, 
@@ -32,37 +15,12 @@ from hidden_point_seeding import HiddenPointSeeder
 from visibility_logging import Logger
 from scipy.sparse import lil_matrix
 from tqdm import tqdm
-from pydrake.all import (SceneGraphCollisionChecker, 
-                         StartMeshcat, 
-                         RobotDiagramBuilder,
-                         ProcessModelDirectives,
-                         LoadModelDirectives,
-                         MeshcatVisualizer)
-
-
-# seed = 1
+from pydrake.all import (SceneGraphCollisionChecker)
+from environments import get_environment_builder
+    
 for seed in [57]:
     np.random.seed(seed)
-    def plant_builder(usemeshcat = False):
-        if usemeshcat:
-            meshcat = StartMeshcat()
-        builder = RobotDiagramBuilder()
-        plant = builder.plant()
-        scene_graph = builder.scene_graph()
-        parser = builder.parser()
-        #parser.package_map().Add("cvisirisexamples", missing directory)
-        if usemeshcat:
-            visualizer = MeshcatVisualizer.AddToBuilder(builder.builder(), scene_graph, meshcat)
-        directives_file = "7_dof_directives_newshelf.yaml"#FindResourceOrThrow() 
-        directives = LoadModelDirectives(directives_file)
-        models = ProcessModelDirectives(directives, plant, parser)
-        plant.Finalize()
-        diagram = builder.Build()
-        diagram_context = diagram.CreateDefaultContext()
-        plant_context = plant.GetMyContextFromRoot(diagram_context)
-        diagram.ForcedPublish(diagram_context)
-        return plant, scene_graph, diagram, diagram_context, plant_context, meshcat if usemeshcat else None
-
+    plant_builder = get_environment_builder('7DOFIIWA')
     plant, scene_graph, diagram, diagram_context, plant_context, meshcat = plant_builder(usemeshcat=True)
 
     scene_graph_context = scene_graph.GetMyMutableContextFromRoot(
@@ -87,14 +45,13 @@ for seed in [57]:
 
     snopt_iris_options = IrisOptions()
     snopt_iris_options.require_sample_point_is_contained = True
-    snopt_iris_options.iteration_limit = 6
+    snopt_iris_options.iteration_limit = 10
     snopt_iris_options.configuration_space_margin = 2e-3
     #snopt_iris_options.max_faces_per_collision_pair = 60
     snopt_iris_options.termination_threshold = -1
     #snopt_iris_options.q_star = np.zeros(3)
-    snopt_iris_options.num_collision_infeasible_samples = 15
+    snopt_iris_options.num_collision_infeasible_samples = 19
     snopt_iris_options.relative_termination_threshold = 0.02
-
 
     def is_los(q1, q2, regions, step_size, checker):
         d = np.linalg.norm(q2-q1)

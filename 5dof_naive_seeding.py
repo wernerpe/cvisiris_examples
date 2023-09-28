@@ -33,26 +33,16 @@ from visibility_logging import Logger
 from scipy.sparse import lil_matrix
 from tqdm import tqdm
 from ur3e_demo import UrDiagram, SetDiffuse
-
+from environments import get_environment_builder
 
 add_shelf = True
 # seed = 1
 for seed in [29]:
     np.random.seed(seed)
 
-    ur = UrDiagram(num_ur = 1, weld_wrist = True, add_shelf = add_shelf,
-                    add_gripper = True, use_meshcat=True)
-    meshcat = ur.meshcat
-    plant = ur.plant
-    diagram_context = ur.diagram.CreateDefaultContext()
-    ur.diagram.ForcedPublish(diagram_context)
-    diagram = ur.diagram
+    env_builder = get_environment_builder('5DOFUR5')
+    plant, scene_graph, diagram, diagram_context, plant_context, meshcat = env_builder(True, cfg)
 
-    plant_context = ur.plant.GetMyMutableContextFromRoot(
-            diagram_context)
-    scene_graph_context = ur.scene_graph.GetMyMutableContextFromRoot(
-        diagram_context)
-    inspector = ur.scene_graph.model_inspector()    
     robot_instances = [plant.GetModelInstanceByName("ur0"), plant.GetModelInstanceByName("schunk0")]
     step_size = 0.125
     checker = SceneGraphCollisionChecker(model = diagram.Clone(), 
@@ -62,8 +52,8 @@ for seed in [29]:
                     edge_step_size = step_size)
 
     scaler = 1 #np.array([0.8, 1., 0.8, 1, 0.8, 1, 0.8]) 
-    q_min = ur.plant.GetPositionLowerLimits()*scaler
-    q_max =  ur.plant.GetPositionUpperLimits()*scaler
+    q_min = plant.GetPositionLowerLimits()*scaler
+    q_max =  plant.GetPositionUpperLimits()*scaler
 
     col_func_handle_ = get_col_func(plant, plant_context)
     sample_cfree = get_sample_cfree_handle(q_min,q_max, col_func_handle_)
@@ -71,7 +61,7 @@ for seed in [29]:
 
     snopt_iris_options = IrisOptions()
     snopt_iris_options.require_sample_point_is_contained = True
-    snopt_iris_options.iteration_limit = 6
+    snopt_iris_options.iteration_limit = 10
     snopt_iris_options.configuration_space_margin = 1e-3
     #snopt_iris_options.max_faces_per_collision_pair = 60
     snopt_iris_options.termination_threshold = -1
