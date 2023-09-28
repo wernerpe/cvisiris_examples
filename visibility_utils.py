@@ -2,6 +2,8 @@ import numpy as np
 from pydrake.all import HPolyhedron, VisibilityGraph
 import matplotlib.colors as mcolors
 import matplotlib.pyplot as plt
+from pydrake.all import InverseKinematics
+from functools import partial
 
 def shrink_regions(regions, offset_fraction = 0.25):
 	shrunken_regions = []
@@ -30,9 +32,6 @@ def point_near_regions(pt, regions, tries = 10, eps = 0.1):
             if r.PointInSet(checkpt.reshape(-1,1)):
                 return True
     return False
-
-from pydrake.all import InverseKinematics
-from functools import partial
 
 def eval_cons(q, c, tol):
     try:
