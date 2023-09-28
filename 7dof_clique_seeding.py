@@ -1,87 +1,52 @@
-
-from pydrake.geometry.optimization import IrisOptions#, HPolyhedron, Hyperellipsoid
-from pydrake.solvers import MosekSolver, CommonSolverOption, SolverOptions
-# from pydrake.all import (PiecewisePolynomial, 
-#                          InverseKinematics, 
-#                          Sphere, 
-#                          Rgba, 
-#                          RigidTransform, 
-#                          RotationMatrix, 
-#                          IrisInConfigurationSpace)
-#import time
-#import pydrake
 from functools import partial
 import numpy as np
 from visibility_utils import (get_col_func, 
                               get_sample_cfree_handle,
                               get_coverage_estimator,
                               vgraph)
-
-from pydrake.all import (SceneGraphCollisionChecker, 
-                         StartMeshcat, 
-                         RobotDiagramBuilder,
-                         ProcessModelDirectives,
-                         LoadModelDirectives,
-                         MeshcatVisualizer)
-
+from pydrake.all import (SceneGraphCollisionChecker)
+from pydrake.geometry.optimization import IrisOptions#, HPolyhedron, Hyperellipsoid
+from environments import get_environment_builder
 from visibility_logging import CliqueApproachLogger
-from visibility_clique_decomposition import VisCliqueDecomp
-from region_generation import SNOPT_IRIS_ellipsoid, SNOPT_IRIS_ellipsoid_parallel
+from visibility_clique_decomposition import VisCliqueInflation
+from region_generation import SNOPT_IRIS_ellipsoid_parallel
+    
+N = 200
+eps = 0.3
+max_iterations_clique = 10
+min_clique_size = 20
+approach = 1
+ap_names = ['redu', 'greedy', 'nx']
+extend_cliques = False
 
-seed = 1
-for seed in range(30,40):
-    N = 1500
-    eps = 0.3
-    max_iterations_clique = 10
-    min_clique_size = 20
-    approach = 1
-    ap_names = ['redu', 'greedy', 'nx']
-    extend_cliques = False
+require_sample_point_is_contained = True
+iteration_limit = 1
+configuration_space_margin = 2.e-3
+termination_threshold = -1
+num_collision_infeasible_samples = 15
+relative_termination_threshold = 0.02
 
-    require_sample_point_is_contained = True
-    iteration_limit = 1
-    configuration_space_margin = 2.e-3
-    termination_threshold = -1
-    num_collision_infeasible_samples = 15
-    relative_termination_threshold = 0.02
-
-    pts_coverage_estimator = 5000
+pts_coverage_estimator = 5000
+    
+for seed in range(1):
     cfg = {'seed': seed,
-        'N': N,
-        'eps': eps,
-        'max_iterations_clique': max_iterations_clique,
-        'min_clique_size': min_clique_size,
-        'approach': approach,
-        'extend_cliques': extend_cliques,
-        'require_sample_point_is_contained':require_sample_point_is_contained,
-        'iteration_limit': iteration_limit,
-        'configuration_space_margin':configuration_space_margin,
-        'termination_threshold':termination_threshold,
-        'num_collision_infeasible_samples':num_collision_infeasible_samples,
-        'relative_termination_threshold':relative_termination_threshold,
-        'pts_coverage_estimator':pts_coverage_estimator}
+            'N': N,
+            'eps': eps,
+            'max_iterations_clique': max_iterations_clique,
+            'min_clique_size': min_clique_size,
+            'approach': approach,
+            'extend_cliques': extend_cliques,
+            'require_sample_point_is_contained':require_sample_point_is_contained,
+            'iteration_limit': iteration_limit,
+            'configuration_space_margin':configuration_space_margin,
+            'termination_threshold':termination_threshold,
+            'num_collision_infeasible_samples':num_collision_infeasible_samples,
+            'relative_termination_threshold':relative_termination_threshold,
+            'pts_coverage_estimator':pts_coverage_estimator}
 
     np.random.seed(seed)
-    def plant_builder(usemeshcat = False):
-        if usemeshcat:
-            meshcat = StartMeshcat()
-        builder = RobotDiagramBuilder()
-        plant = builder.plant()
-        scene_graph = builder.scene_graph()
-        parser = builder.parser()
-        #parser.package_map().Add("cvisirisexamples", missing directory)
-        if usemeshcat:
-            visualizer = MeshcatVisualizer.AddToBuilder(builder.builder(), scene_graph, meshcat)
-        directives_file = "7_dof_directives_newshelf.yaml"#FindResourceOrThrow() 
-        directives = LoadModelDirectives(directives_file)
-        models = ProcessModelDirectives(directives, plant, parser)
-        plant.Finalize()
-        diagram = builder.Build()
-        diagram_context = diagram.CreateDefaultContext()
-        plant_context = plant.GetMyContextFromRoot(diagram_context)
-        diagram.ForcedPublish(diagram_context)
-        return plant, scene_graph, diagram, diagram_context, plant_context, meshcat if usemeshcat else None
-
+    
+    plant_builder = get_environment_builder('7DOFIIWA')
     plant, scene_graph, diagram, diagram_context, plant_context, meshcat = plant_builder(usemeshcat=True)
 
     scene_graph_context = scene_graph.GetMyMutableContextFromRoot(
@@ -116,14 +81,6 @@ for seed in range(30,40):
 
     vgraph_handle = partial(vgraph, checker = checker, parallelize = True) 
     clogger = CliqueApproachLogger(f"7dof_iiwa_",f"{ap_names[approach]}", estimate_coverage=estimate_coverage, cfg_dict=cfg)
-    # iris_handle = partial(SNOPT_IRIS_ellipsoid, 
-    #                       region_obstacles = [],
-    #                       logger = clogger, 
-    #                       plant = plant, 
-    #                       context = diagram_context,
-    #                       snoptiris_options = snopt_iris_options,
-    #                       estimate_coverage = estimate_coverage,
-    #                       coverage_threshold = 1- eps)
 
     iris_handle = partial(SNOPT_IRIS_ellipsoid_parallel,
                         region_obstacles = [],
@@ -133,7 +90,7 @@ for seed in range(30,40):
                         estimate_coverage = estimate_coverage,
                         coverage_threshold = 1- eps)
 
-    vcd = VisCliqueDecomp(N, 
+    vcd = VisCliqueInflation(N, 
                     eps,
                     max_iterations=max_iterations_clique,
                     sample_cfree = sample_cfree,

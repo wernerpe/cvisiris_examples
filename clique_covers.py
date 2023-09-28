@@ -5,6 +5,8 @@ import numpy as np
 import networkx as nx
 import subprocess
 
+_REDUVCCPATH = "/home/peter/git/ExtensionCC_test/ExtensionCC"
+
 def networkx_to_metis_format(graph):
     num_nodes = graph.number_of_nodes()
     num_edges = graph.number_of_edges()
@@ -30,7 +32,7 @@ def compute_cliques_REDUVCC(ad_mat, maxtime = 30):
         f.writelines(metis_lines)
         f.flush()  # Flush the buffer to ensure data is written immediately
         f.close()
-    binary_loc = "/home/peter/git/ExtensionCC_test/ExtensionCC/out/optimized/vcc "
+    binary_loc = f"{_REDUVCCPATH}/out/optimized/vcc "
     options = f"--solver_time_limit={maxtime} --seed=5 --run_type=ReduVCC --output_cover_file=tmp/cliques.txt "
     file = "tmp/vgraph.metis"
     command = binary_loc + options + file
@@ -253,26 +255,6 @@ def extend_cliques(adj_mat, cliques):
         else:
             extended_cliques.append(clique)
     return extended_cliques
-
-# def compute_greedy_clique_partition_edge_removal(adj_mat):
-#     cliques = []
-#     done = False
-#     adj_curr = adj_mat.copy()
-#     adj_curr = 1- adj_curr
-#     np.fill_diagonal(adj_curr, 0)
-#     ind_curr = np.arange(len(adj_curr))
-#     while not done:
-#         val, ind_max_clique_local = solve_max_independent_set_integer(adj_curr)
-#         #non_max_ind_local = np.arange(len(adj_curr))
-#         #non_max_ind_local = np.delete(non_max_ind_local, ind_max_clique_local, None)
-#         index_max_clique_global = np.array([ind_curr[i] for i in ind_max_clique_local])
-#         cliques.append(index_max_clique_global.reshape(-1))
-#         adj_curr = np.delete(adj_curr, ind_max_clique_local, 0)
-#         adj_curr = np.delete(adj_curr, ind_max_clique_local, 1)
-#         ind_curr = np.delete(ind_curr, ind_max_clique_local)
-#         if len(adj_curr) == 0:
-#             done = True
-#     return cliques
 
 def compute_minimal_clique_partition_nx(adj_mat):
     n = len(adj_mat)

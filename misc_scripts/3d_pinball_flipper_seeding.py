@@ -32,7 +32,7 @@ from pydrake.geometry.optimization import ComputeVisibilityGraph
 
 from tqdm import tqdm
 from scipy.sparse import lil_matrix
-from visibility_seeding import VisSeeder
+from hidden_point_seeding import HiddenPointSeeder
 from visibility_logging import Logger
 
 
@@ -305,7 +305,7 @@ for seed in [1, 2]:
 
 
         logger = Logger("3DOf_pinball", seed, N, alpha, eps, estimate_coverage)
-        VS = VisSeeder(N = N,
+        VS = HiddenPointSeeder(N = N,
                     alpha = alpha,
                     eps = eps,
                     max_iterations = 300,

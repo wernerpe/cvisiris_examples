@@ -16,7 +16,7 @@ import visualization_utils as viz_utils
 from visibility_utils import point_in_regions, point_near_regions
 from tqdm import tqdm
 from scipy.sparse import lil_matrix
-from visibility_seeding import VisSeeder
+from hidden_point_seeding import HiddenPointSeeder
 from visibility_logging import Logger
 import os
 
@@ -187,7 +187,7 @@ for seed in [18, 19, 20]:
 			return adj_mat
 
 		logger = Logger("5DOf_ur", seed, N, alpha, eps, estimate_coverage)
-		VS = VisSeeder(N = N,
+		VS = HiddenPointSeeder(N = N,
 					alpha = alpha,
 					eps = eps,
 					max_iterations = 1500 if N ==1 else 20,
