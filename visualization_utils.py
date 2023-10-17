@@ -330,3 +330,15 @@ def plot_ellipse( meshcat, name, ellipse, color, offset = None):
         meshcat.SetObject(name, shape, color)
         meshcat.SetTransform(name, pose2)
 
+from pydrake.all import Sphere, Rgba, RigidTransform, RotationMatrix
+
+def plot_points(meshcat, points, name, size = 0.05, color = Rgba(0.06, 0.0, 0, 1)):
+    for i, pt in enumerate(points):
+        n_i = name+f"/pt{i}"
+        meshcat.SetObject(n_i,
+                          Sphere(size),
+                          color)
+        meshcat.SetTransform(n_i, 
+                             RigidTransform(
+                             RotationMatrix(), 
+                             np.array(pt)))

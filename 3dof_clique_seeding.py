@@ -13,8 +13,8 @@ from environments import get_environment_builder
     
 N = 500
 eps = 0.1
-approach = 1
-ap_names = ['redu', 'greedy', 'nx', 'cvx_hull']
+approach = 4
+ap_names = ['redu', 'greedy', 'nx', 'cvx_hull', 'cvxh_e']
 
 max_iterations_clique = 10
 extend_cliques = False
@@ -26,7 +26,7 @@ num_collision_infeasible_samples = 19
 relative_termination_threshold = 0.02
 pts_coverage_estimator = 5000
 min_clique_size =10
-for seed in range(1):
+for seed in range(3):
     np.random.seed(seed) 
 
     cfg = {

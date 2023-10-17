@@ -19,8 +19,8 @@ for seed in range(1):
     eps = 0.25
     max_iterations_clique = 15
     min_clique_size = 10
-    approach = 1
-    ap_names = ['redu', 'greedy', 'nx']
+    approach = 4
+    ap_names = ['redu', 'greedy', 'nx', 'cvx_hull', '_cvxh_e_sdd_']
     extend_cliques = False
 
     require_sample_point_is_contained = True

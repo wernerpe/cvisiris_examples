@@ -104,6 +104,31 @@ def plant_builder_7dof_iiwa(usemeshcat = False):
     diagram.ForcedPublish(diagram_context)
     return plant, scene_graph, diagram, diagram_context, plant_context, meshcat if usemeshcat else None
 
+def plant_builder_7dof_bins(usemeshcat = False):
+    if usemeshcat:
+        meshcat = StartMeshcat()
+    builder = RobotDiagramBuilder()
+    plant = builder.plant()
+    scene_graph = builder.scene_graph()
+    parser = builder.parser()
+    #parser.package_map().Add("cvisirisexamples", missing directory)
+    if usemeshcat:
+        par = MeshcatVisualizerParams()
+        par.role = Role.kProximity
+        visualizer = MeshcatVisualizer.AddToBuilder(builder.builder(), scene_graph, meshcat, par)
+    directives_file = "7dof_bins_example.yaml"#FindResourceOrThrow() 
+    path_repo = os.path.dirname(os.path.abspath('')) #os.path.dirname(os.path.dirname(os.path.realpath(__file__))) # replace with {path to cvisirsexamples repo}
+    parser.package_map().Add("cvisiris", path_repo+"/cvisiris_examples/assets")
+    directives = LoadModelDirectives(directives_file)
+    models = ProcessModelDirectives(directives, plant, parser)
+    plant.Finalize()
+    diagram = builder.Build()
+    diagram_context = diagram.CreateDefaultContext()
+    plant_context = plant.GetMyContextFromRoot(diagram_context)
+    diagram.ForcedPublish(diagram_context)
+    return plant, scene_graph, diagram, diagram_context, plant_context, meshcat if usemeshcat else None
+
+
 def environment_builder_14dof_iiwas(usemeshcat = False):
     builder = RobotDiagramBuilder()
     if usemeshcat: meshcat = StartMeshcat()
@@ -149,7 +174,7 @@ def environment_builder_14dof_iiwas(usemeshcat = False):
     return plant, scene_graph, diagram, diagram_context, plant_context, meshcat if usemeshcat else None
 
 def get_environment_builder(environment_name):
-    valid_names = ['3DOFFLIPPER', '5DOFUR5', '7DOFIIWA']
+    valid_names = ['3DOFFLIPPER', '5DOFUR5', '7DOFIIWA', '7DOFBINS', '14DOFIIWAS']
     if not environment_name in valid_names:
         raise ValueError(f"Choose a valid environment {valid_names}")
     if environment_name == '3DOFFLIPPER':
@@ -158,6 +183,8 @@ def get_environment_builder(environment_name):
         return plant_builder_5dof_ur5
     elif environment_name == '7DOFIIWA':
         return plant_builder_7dof_iiwa
+    elif environment_name == '7DOFBINS':
+        return plant_builder_7dof_bins
     elif environment_name == '14DOFIIWAS':
         return environment_builder_14dof_iiwas
     return None

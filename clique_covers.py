@@ -1,5 +1,8 @@
 from independent_set_solver import solve_max_independent_set_integer, solve_max_independet_set_KAMIS
-from ellipse_utils import get_lj_ellipse
+from ellipse_utils import (get_lj_ellipse, 
+                           get_lj_ellipse_homogeneous_rep, 
+                           arrange_homogeneous_ellipse_matrix_to_vector, 
+                           build_quadratic_features)
 from pydrake.all import Hyperellipsoid, Solve, CommonSolverOption, MathematicalProgram, SolverOptions
 import numpy as np
 import networkx as nx
@@ -110,35 +113,242 @@ def compute_outer_LJ_sphere(pts):
 
 from pydrake.all import GurobiSolver
 
-def max_clique_w_cvx_hull_constraint(adj_mat, graph_vertices, c = None):
+def max_clique_w_ellipsoidal_cvx_hull_constraint(adj_mat, 
+                                                 graph_vertices, 
+                                                 c=None, 
+                                                 min_eig = 1e-3, 
+                                                 max_eig = 5e-2, 
+                                                 r_scale = 1.0, 
+                                                 M_vals = None,
+                                                 worklimit = 400,
+                                                 warm_start = True,
+                                                 use_sdd = False):
+    """ 
+    adj_mat: nxn {0,1} binary adjacency matrix
+    graph_vertices: nxdim vertex locations
+    c: nx1 cost vector for the vertices (used for computing covers)
+    min_eig: minimum eigen value of decision boundary
+    max_eig: maximum eigen value of decision boundary
+    M_vals: nx1 setting this vector overrides the BigM values 
+    """
+    add_extra = True
+
     assert adj_mat.shape[0] == len(graph_vertices)
+    assert r_scale>=0.5
+    
     #assert graph_vertices[0, :].shape[0] == points_to_exclude.shape[1]
     dim = graph_vertices.shape[1]
+    n = adj_mat.shape[0]
+    if M_vals is None:
+        #compute radius of circumscribed sphere of all points to get margin size
+        HS = compute_outer_LJ_sphere(graph_vertices)
+        radius = 1/(HS.A()[0,0]+1e-6)
+        center = HS.center()
+        dists = np.linalg.norm((graph_vertices-center.reshape(1,-1)), axis=1)
+        M_vals = max_eig*(dists+r_scale*radius)**2
+    else:
+        assert M_vals.shape[0] ==n 
+
+    fq = build_quadratic_features(graph_vertices)
+    if c is None:
+        c = np.ones((n,))
+    prog = MathematicalProgram()
+    v = prog.NewBinaryVariables(n)
+    Emat = prog.NewSymmetricContinuousVariables(dim+1)
+    hE = arrange_homogeneous_ellipse_matrix_to_vector(Emat)
+    prog.AddLinearCost(-np.sum(c*v))
+
+    for i in range(0,n):
+        for j in range(i+1,n):
+            if adj_mat[i,j] == 0:
+                prog.AddLinearConstraint(v[i] + v[j] <= 1)
+
+    for i in range(n):
+        val = hE.T@fq[i,:]
+        prog.AddLinearConstraint(val>=1-v[i])
+        prog.AddLinearConstraint(val<=1+M_vals[i]*(1-v[i])) #
+
+    #force non-trivial solutions
+    pd_amount = min_eig *np.eye(dim)
+    if use_sdd:
+        prog.AddScaledDiagonallyDominantMatrixConstraint(Emat[:-1, :-1]-pd_amount)
+    else:
+        prog.AddPositiveDiagonallyDominantMatrixConstraint(Emat[:-1, :-1]-pd_amount)    
+ 
+    if add_extra:
+        lamb = prog.NewContinuousVariables(n,n)
+        eq_cons = lamb@graph_vertices - np.diag(v)@graph_vertices
+        for row in eq_cons:
+            for c in row:
+                prog.AddLinearConstraint(c ==0)
+
+        for i in range(n):
+            for j in range(n):
+                prog.AddLinearConstraint(lamb[i,j] >=0)
+                prog.AddLinearConstraint(lamb[i,j] <=v[j])
+
+        sumlamb = np.sum(lamb, axis =1)
+        cons_sum = sumlamb-v
+        for c in cons_sum:
+            prog.AddLinearConstraint(c==0)
+        prog.AddLinearCost(-np.sum(lamb))
+        
+    solver_options = SolverOptions()
+    solver_options.SetOption(CommonSolverOption.kPrintToConsole, 1)
+    solver_options.SetOption(GurobiSolver.id(), 'WorkLimit', worklimit)
+    
+
+
+
+    if warm_start:
+        adj_inv = adj_mat.copy()
+        adj_inv = 1- adj_inv
+        np.fill_diagonal(adj_inv, 0)
+        ind_curr = np.arange(len(adj_inv))
+        val, max_clique = solve_max_independent_set_integer(adj_inv)
+        points_max_clique = graph_vertices[max_clique] 
+        E_guess = get_lj_ellipse_homogeneous_rep(points_max_clique)
+        v_guess= np.zeros(n)
+        v_guess[max_clique] =1
+        prog.SetInitialGuess(v, v_guess)
+        prog.SetInitialGuess(Emat, E_guess)
+    result = Solve(prog, solver_options=solver_options)
+    
+    print(result.is_success())
+    return  -result.get_optimal_cost(), np.where(np.abs(result.GetSolution(v)-1)<=1e-4)[0], result.GetSolution(Emat), result.GetSolution(v), M_vals
+
+def compute_greedy_clique_cover_w_ellipsoidal_convex_hull_constraint(adj_mat, 
+                                                                     pts, 
+                                                                     smin =10, 
+                                                                     max_aspect_ratio = 8, 
+                                                                     r_scale = 1.0, 
+                                                                     worklimit = 400, 
+                                                                     warm_start = False,
+                                                                     use_sdd = False):
+    assert adj_mat.shape[0] == len(pts)
+    print(f"[CLIQUECOVERELLIPSOID] Using {'Scaled 'if use_sdd else''}DD Constraint")
+    LJS = compute_outer_LJ_sphere(pts)
+    radius = 1/(LJS.A()[0,0]+1e-6)
+    min_eig = radius/10 * 1e-3
+    max_eig = max_aspect_ratio*min_eig
+    #radius = 1/(HS.A()[0,0]+1e-6)
+    center = LJS.center()
+    dists = np.linalg.norm((pts-center.reshape(1,-1)), axis=1)
+    M_vals = max_eig*(dists+r_scale*radius)**2
+
+    cliques = []
+    done = False
+    pts_curr = pts.copy()
+    adj_curr = adj_mat.copy()
+    ind_curr = np.arange(len(adj_curr))
+    c = np.ones((adj_mat.shape[0],))
+    boundaries = []
+    while not done:
+        val, ind_max_clique_local,dec_boundary,_,_ = max_clique_w_ellipsoidal_cvx_hull_constraint(adj_curr, 
+                                                                                                  pts_curr, 
+                                                                                                  c,  
+                                                                                                  min_eig, 
+                                                                                                  max_eig, 
+                                                                                                  r_scale, 
+                                                                                                  M_vals = M_vals, 
+                                                                                                  worklimit=worklimit,
+                                                                                                  warm_start=warm_start,
+                                                                                                  use_sdd = use_sdd)
+        boundaries+= [dec_boundary]
+        index_max_clique_global = np.array([ind_curr[i] for i in ind_max_clique_local])
+        c[ind_max_clique_local] = 0
+        cliques.append(index_max_clique_global.reshape(-1))
+        if val< smin:
+            done = True
+    return cliques, boundaries
+
+def max_clique_w_cvx_hull_constraint_reduced(adj_mat, 
+                                             graph_vertices, 
+                                             c = None, 
+                                             d_min = 1e-2, 
+                                             alpha_max = 0.85*np.pi/2, 
+                                             c_bounds = None,
+                                             Mij = None):
+    assert adj_mat.shape[0] == len(graph_vertices)
+    assert alpha_max>=0 and  alpha_max<= 0.99*np.pi/2 
+    #assert graph_vertices[0, :].shape[0] == points_to_exclude.shape[1]
+    
+    dim = graph_vertices.shape[1]
     #compute radius of circumscribed sphere of all points to get soft margin size
-    HS = compute_outer_LJ_sphere(graph_vertices)
-    radius = 2*1/(HS.A()[0,0]+1e-6)
+    # HS = compute_outer_LJ_sphere(graph_vertices)
+    # radius = 3.5*1/(HS.A()[0,0]+1e-6)
     n = adj_mat.shape[0]
     if c is None:
         c = np.ones((n,))
     prog = MathematicalProgram()
     v = prog.NewBinaryVariables(n)
+    prog.AddLinearCost(-np.sum(c*v))
+    
+    #hyperplanes
+    ci = prog.NewContinuousVariables(n, dim)
+    if c_bounds is None and Mij is None:
+        c_bounds = np.zeros(n)#1/(np.sqrt(dim)*d_min*np.ones((n,)))#
+        for i in range(n):
+            dists = np.linalg.norm(graph_vertices - graph_vertices[i, :].reshape(1,-1), axis = 1) 
+            dists_red = np.delete(dists, i)
+            d_lower = np.max([np.min(dists_red), d_min])
+            c_bounds[i] = 1/(np.cos(alpha_max)*d_lower)
+
+        Mij = np.zeros((n,n))
+        for i in range(n):
+            for j in range(i+1, n):
+                Mij[i,j] = np.sqrt(dim)*c_bounds[i]*np.linalg.norm(graph_vertices[i,:]-graph_vertices[j,:]) + 1
+                Mij[j,i] = np.sqrt(dim)*c_bounds[j]*np.linalg.norm(graph_vertices[i,:]-graph_vertices[j,:]) + 1
+    else:
+        assert c_bounds.shape[0] == n and not np.any(c_bounds<0)
+        assert Mij.shape[0]==Mij.shape[1] and Mij.shape[0]==n and not np.any(Mij<0)
+    #Mij = cbd*np.abs(graph_vertices@graph_vertices.T) #+4*cbd
+    
+    for i in range(0,n):
+        for j in range(i+1,n):
+            if adj_mat[i,j] == 0:
+                prog.AddLinearConstraint(v[i] + v[j] <= 1)
+
+
+    for i in range(0,n):
+        for d in range(dim):
+            prog.AddLinearConstraint(ci[i,d] <= c_bounds[i])
+            prog.AddLinearConstraint(ci[i,d] >= -c_bounds[i])
+
+    for i in range(n):
+        for j in range(n):
+            if i!=j:
+                cons = (graph_vertices[j, :] - graph_vertices[i,:])@ci[i,:] - (1-v[i]) + Mij[i,j]*(1-v[j])
+                prog.AddLinearConstraint(cons >=0)
+
+    solver_options = SolverOptions()
+    #solver_options.SetOption(GurobiSolver.id(), 'OptimalityTol', 1e-6)
+    #solver_options.SetOption(GurobiSolver.id(), 'MIPGap', 1e-6)
+    solver_options.SetOption(CommonSolverOption.kPrintToConsole, 1)
+
+    result = Solve(prog, solver_options=solver_options)
+    print(result.is_success())
+    return -result.get_optimal_cost(), np.where(result.GetSolution(v)>=0.9)[0]
+
+def max_clique_w_cvx_hull_constraint(adj_mat, graph_vertices, c = None):
+    assert adj_mat.shape[0] == len(graph_vertices)
+    #assert graph_vertices[0, :].shape[0] == points_to_exclude.shape[1]
+    
+    dim = graph_vertices.shape[1]
+    #compute radius of circumscribed sphere of all points to get soft margin size
+    HS = compute_outer_LJ_sphere(graph_vertices)
+    radius = 3.5*1/(HS.A()[0,0]+1e-6)
+    n = adj_mat.shape[0]
+    if c is None:
+        c = np.ones((n,))
+    prog = MathematicalProgram()
+    v = prog.NewBinaryVariables(n)
+    prog.AddLinearCost(-np.sum(c*v))
     
     #hyperplanes
     lambdas = prog.NewContinuousVariables(n, dim+1)
     #slack variables for soft margins
     gammas = prog.NewContinuousVariables(n, n)
-    
-    
-    # prog.AddLinearCost(-np.sum(c*v) -np.sum(gammas))
-    prog.AddLinearCost(-c, 0, v)
-    # prog.Add2NormSquaredCost(np.eye(lambdas.size), np.zeros(lambdas.size), lambdas.flatten())
-    from pydrake.all import L1NormCost
-    z = prog.NewContinuousVariables(lambdas[:,:-1].size,"z")
-    A = np.kron(np.array([[1,-1],[-1,-1]]), np.eye(z.size))
-    b = np.zeros(A.shape[0])
-    prog.AddLinearConstraint(A, -np.inf*np.ones_like(b), b, np.concatenate([lambdas[:,:-1].flatten(), z]))
-    prog.AddLinearCost(np.ones(z.size), 0, z)
-    
 
     Points_mat = np.concatenate((graph_vertices,np.ones((n,1))), axis =1)
     #Exclusion_points_mat =  np.concatenate((points_to_exclude,np.ones((num_points_to_exclude,1))), axis =1)
@@ -164,68 +374,82 @@ def max_clique_w_cvx_hull_constraint(adj_mat, graph_vertices, c = None):
         for vi,gi in zip(v, gammas_point_i):
             prog.AddLinearConstraint((1-vi)>= gi )
 
-    solver = GurobiSolver()
+
     solver_options = SolverOptions()
     solver_options.SetOption(CommonSolverOption.kPrintToConsole, 1)
-    solver_options.SetOption(solver.id(), "SolutionLimit", 2)
 
-    result = solver.Solve(prog, solver_options=solver_options)
+    result = Solve(prog, solver_options=solver_options)
     print(result.is_success())
-    print(f"CLIQUE SIZE {np.sum(result.GetSolution(v))}")
-    return -result.get_optimal_cost(), np.where(result.GetSolution(v)==1)[0]
+    return -result.get_optimal_cost(), np.where(result.GetSolution(v)>=0.9)[0]
 
-def compute_greedy_clique_partition_convex_hull(adj_mat, pts, smin = 10):
+def compute_greedy_clique_partition_convex_hull(adj_mat, pts, smin = 10, mode = 'reduced', d_min = 1e-2, alpha_max = 0.85*np.pi/2):
     assert adj_mat.shape[0] == len(pts)
+    assert mode in ['reduced', 'full']
     cliques = []
     done = False
     pts_curr = pts.copy()
-    adj_curr = adj_mat.copy().toarray()
+    adj_curr = adj_mat.copy()
     ind_curr = np.arange(len(adj_curr))
     c = np.ones((adj_mat.shape[0],))
+
+    if mode=='reduced':
+        #precompute bigM values and c_bounds
+        n = adj_mat.shape[0]
+        dim = pts.shape[1]
+        c_bounds = np.zeros(n)#1/(np.sqrt(dim)*d_min*np.ones((n,)))#
+        for i in range(n):
+            dists = np.linalg.norm(pts - pts[i, :].reshape(1,-1), axis = 1) 
+            dists_red = np.delete(dists, i)
+            d_lower = np.max([np.min(dists_red), d_min])
+            c_bounds[i] = 1/(np.cos(alpha_max)*d_lower)
+
+        Mij = np.zeros((n,n))
+        for i in range(n):
+            for j in range(i+1, n):
+                Mij[i,j] = np.sqrt(dim)*c_bounds[i]*np.linalg.norm(pts[i,:]-pts[j,:]) + 1
+                Mij[j,i] = np.sqrt(dim)*c_bounds[j]*np.linalg.norm(pts[i,:]-pts[j,:]) + 1
+
     while not done:
-        val, ind_max_clique_local = max_clique_w_cvx_hull_constraint(adj_curr, pts_curr,c)
-        #non_max_ind_local = np.arange(len(adj_curr))
-        #non_max_ind_local = np.delete(non_max_ind_local, ind_max_clique_local, None)
+        if mode == 'reduced':
+            val, ind_max_clique_local = max_clique_w_cvx_hull_constraint_reduced(adj_curr, pts_curr, c, d_min, alpha_max, c_bounds=c_bounds, Mij=Mij)
+        else:
+            val, ind_max_clique_local = max_clique_w_cvx_hull_constraint(adj_curr, pts_curr,c)
         index_max_clique_global = np.array([ind_curr[i] for i in ind_max_clique_local])
         c[ind_max_clique_local] = 0
         cliques.append(index_max_clique_global.reshape(-1))
-        #adj_curr = np.delete(adj_curr, ind_max_clique_local, 0)
-        #adj_curr = np.delete(adj_curr, ind_max_clique_local, 1)
-        #pts_curr = np.delete(pts_curr, ind_max_clique_local, 0)
-        #ind_curr = np.delete(ind_curr, ind_max_clique_local)
         if val< smin:
             done = True
     return cliques
 
-def compute_greedy_clique_edge_cover(adj_mat, min_cliuqe_size):
-    cliques = []
-    done = False
-    adj_curr = adj_mat.copy()
-    adj_curr = 1- adj_curr
-    np.fill_diagonal(adj_curr, 0)
-    ind_curr = np.arange(len(adj_curr))
-    #we compute a weighted max independent set, with the weigths
+# def compute_greedy_clique_edge_cover(adj_mat, min_cliuqe_size):
+#     cliques = []
+#     done = False
+#     adj_curr = adj_mat.copy()
+#     adj_curr = 1- adj_curr
+#     np.fill_diagonal(adj_curr, 0)
+#     ind_curr = np.arange(len(adj_curr))
+#     #we compute a weighted max independent set, with the weigths
 
-    #failure case max independent set = max nr edges -> only adding m^2 - previously covered edges, 
-    # need to subtract already covered edges from cost function? yes! but how
-    # cost = -m(m-1)/2 - covered edges vi*vj*weight
-    # naive implementation keeps the size of the program constant and 
-    # marks off all edges covered by previous cliques in a upper triagular matrix
-    # a better implementation will remove vertices from the program if all its outgoing edges have been covered
+#     #failure case max independent set = max nr edges -> only adding m^2 - previously covered edges, 
+#     # need to subtract already covered edges from cost function? yes! but how
+#     # cost = -m(m-1)/2 - covered edges vi*vj*weight
+#     # naive implementation keeps the size of the program constant and 
+#     # marks off all edges covered by previous cliques in a upper triagular matrix
+#     # a better implementation will remove vertices from the program if all its outgoing edges have been covered
     
 
-    while not done:
-        val, ind_max_clique_local = solve_max_independent_set_integer(adj_curr) #solve_max_independet_set_KAMIS(adj_curr, maxtime = 5) #
-        #non_max_ind_local = np.arange(len(adj_curr))
-        #non_max_ind_local = np.delete(non_max_ind_local, ind_max_clique_local, None)
-        index_max_clique_global = np.array([ind_curr[i] for i in ind_max_clique_local])
-        cliques.append(index_max_clique_global.reshape(-1))
-        adj_curr = np.delete(adj_curr, ind_max_clique_local, 0)
-        adj_curr = np.delete(adj_curr, ind_max_clique_local, 1)
-        ind_curr = np.delete(ind_curr, ind_max_clique_local)
-        if len(adj_curr) == 0 or len(cliques[-1])<min_cliuqe_size:
-            done = True
-    return cliques
+#     while not done:
+#         val, ind_max_clique_local = solve_max_independent_set_integer(adj_curr) #solve_max_independet_set_KAMIS(adj_curr, maxtime = 5) #
+#         #non_max_ind_local = np.arange(len(adj_curr))
+#         #non_max_ind_local = np.delete(non_max_ind_local, ind_max_clique_local, None)
+#         index_max_clique_global = np.array([ind_curr[i] for i in ind_max_clique_local])
+#         cliques.append(index_max_clique_global.reshape(-1))
+#         adj_curr = np.delete(adj_curr, ind_max_clique_local, 0)
+#         adj_curr = np.delete(adj_curr, ind_max_clique_local, 1)
+#         ind_curr = np.delete(ind_curr, ind_max_clique_local)
+#         if len(adj_curr) == 0 or len(cliques[-1])<min_cliuqe_size:
+#             done = True
+#     return cliques
 
 def find_clique_neighbors(adj_mat, clique):
     nei = []

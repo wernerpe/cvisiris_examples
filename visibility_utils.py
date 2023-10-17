@@ -83,3 +83,29 @@ def vgraph(points, checker, parallelize):
         ad_mat[i,i] = False
     #TODO: need to make dense for now to avoid wierd nx bugs for saving the metis file.
     return  ad_mat
+
+from pydrake.all import VPolytope
+from visualization_utils import get_AABB_limits
+
+def get_AABB_cvxhull(regions):
+    vps = [VPolytope(r).vertices().T for r in regions]
+    cvxh = HPolyhedron(VPolytope(np.concatenate(tuple(vps), axis=0).T))
+    max, min = get_AABB_limits(cvxh, dim = 3)    
+    return np.array(min), np.array(max), cvxh
+
+def sample_in_union_of_polytopes(num_points, regions, aabb_limits, maxit = int(1e4)):
+    dim = regions[0].ambient_dimension()
+    min = aabb_limits[0]
+    max = aabb_limits[1]
+    diff = max - min
+    pts = np.zeros((num_points, dim))
+    for i in range(num_points):
+        for it in range(maxit):
+            pt = min + np.random.rand(dim)*diff
+            if point_in_regions(pt, regions):
+                pts[i,:] = pt
+                break
+            if it == maxit-1:
+                print("[sample_in_union_of_polytopes] NO POINT FOUND")
+                return None   
+    return pts
