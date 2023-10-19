@@ -93,7 +93,8 @@ def get_AABB_cvxhull(regions):
     max, min = get_AABB_limits(cvxh, dim = 3)    
     return np.array(min), np.array(max), cvxh
 
-def sample_in_union_of_polytopes(num_points, regions, aabb_limits, maxit = int(1e4)):
+def sample_in_union_of_polytopes(num_points, regions, aabb_limits, maxit = int(1e4), seed = 1234976512):
+    #np.random.seed(seed)
     dim = regions[0].ambient_dimension()
     min = aabb_limits[0]
     max = aabb_limits[1]

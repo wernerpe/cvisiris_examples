@@ -114,7 +114,7 @@ def plant_builder_7dof_bins(usemeshcat = False):
     #parser.package_map().Add("cvisirisexamples", missing directory)
     if usemeshcat:
         par = MeshcatVisualizerParams()
-        par.role = Role.kProximity
+        par.role = Role.kIllustration
         visualizer = MeshcatVisualizer.AddToBuilder(builder.builder(), scene_graph, meshcat, par)
     directives_file = "7dof_bins_example.yaml"#FindResourceOrThrow() 
     path_repo = os.path.dirname(os.path.abspath('')) #os.path.dirname(os.path.dirname(os.path.realpath(__file__))) # replace with {path to cvisirsexamples repo}

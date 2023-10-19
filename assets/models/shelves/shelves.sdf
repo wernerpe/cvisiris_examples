@@ -44,10 +44,10 @@
         </geometry>
       </collision>
       <collision name="back_wall">
-        <pose> 0 -0.292 0 0 0 0</pose>
+        <pose> 0.150 0.0 0 0 0 1.57</pose>
         <geometry>
           <box>
-            <size>0.3 0.016 0.783</size>
+            <size>0.6 0.016 0.783</size>
           </box>
         </geometry>
       </collision>

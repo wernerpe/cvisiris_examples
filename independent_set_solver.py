@@ -1,6 +1,7 @@
 import numpy as np
 from pydrake.all import (MathematicalProgram, SolverOptions, 
-			            Solve, CommonSolverOption)
+			            Solve, CommonSolverOption, GurobiSolver)
+
 
 from scipy.sparse.csgraph import connected_components
 from scipy.sparse import lil_matrix, csr_matrix
@@ -42,23 +43,23 @@ def get_connected_components(ad_mat : lil_matrix):
 
 	return connected_components_list
 
-def solve_max_independent_set_integer(adj_mat):
-	n = adj_mat.shape[0]
-	if n == 1:
-		return 1, np.array([0])
-	prog = MathematicalProgram()
-	v = prog.NewBinaryVariables(n)
-	prog.AddLinearCost(-np.sum(v))
-	for i in range(0,n):
-		for j in range(i,n):
-			if adj_mat[i,j]:
-				prog.AddLinearConstraint(v[i] + v[j] <= 1)
+def solve_max_independent_set_integer(adj_mat, worklimit = 1000):
+    n = adj_mat.shape[0]
+    if n == 1:
+        return 1, np.array([0])
+    prog = MathematicalProgram()
+    v = prog.NewBinaryVariables(n)
+    prog.AddLinearCost(-np.sum(v))
+    for i in range(0,n):
+        for j in range(i,n):
+            if adj_mat[i,j]:
+                prog.AddLinearConstraint(v[i] + v[j] <= 1)
 
-	solver_options = SolverOptions()
-	solver_options.SetOption(CommonSolverOption.kPrintToConsole, 1)
-
-	result = Solve(prog, solver_options=solver_options)
-	return -result.get_optimal_cost(), np.nonzero(result.GetSolution(v))[0]
+    solver_options = SolverOptions()
+    solver_options.SetOption(CommonSolverOption.kPrintToConsole, 1)
+    solver_options.SetOption(GurobiSolver.id(), 'WorkLimit', worklimit)
+    result = Solve(prog, solver_options=solver_options)
+    return -result.get_optimal_cost(), np.nonzero(result.GetSolution(v))[0]
 
 def solve_max_independet_set_KAMIS(adj_mat, maxtime=20):
     if not isinstance(adj_mat, np.ndarray):

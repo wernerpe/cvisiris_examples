@@ -50,7 +50,7 @@ def compute_cliques_REDUVCC(ad_mat, maxtime = 30):
     cliques = sorted(cliques, key=len)[::-1]
     return cliques
 
-def compute_greedy_clique_partition(adj_mat, min_cliuqe_size):
+def compute_greedy_clique_partition(adj_mat, min_cliuqe_size, worklimit =100):
     cliques = []
     done = False
     adj_curr = adj_mat.copy()
@@ -58,7 +58,7 @@ def compute_greedy_clique_partition(adj_mat, min_cliuqe_size):
     np.fill_diagonal(adj_curr, 0)
     ind_curr = np.arange(len(adj_curr))
     while not done:
-        val, ind_max_clique_local = solve_max_independent_set_integer(adj_curr) #solve_max_independet_set_KAMIS(adj_curr, maxtime = 5) #
+        val, ind_max_clique_local = solve_max_independent_set_integer(adj_curr, worklimit=worklimit) #solve_max_independet_set_KAMIS(adj_curr, maxtime = 5) #
         #non_max_ind_local = np.arange(len(adj_curr))
         #non_max_ind_local = np.delete(non_max_ind_local, ind_max_clique_local, None)
         index_max_clique_global = np.array([ind_curr[i] for i in ind_max_clique_local])
@@ -69,6 +69,7 @@ def compute_greedy_clique_partition(adj_mat, min_cliuqe_size):
         if len(adj_curr) == 0 or len(cliques[-1])<min_cliuqe_size:
             done = True
     return cliques
+
 from ellipse_utils import switch_ellipse_description
 
 def compute_outer_LJ_sphere(pts):

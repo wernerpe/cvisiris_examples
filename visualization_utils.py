@@ -3,7 +3,7 @@ from functools import partial
 from pydrake.all import (MathematicalProgram, le, SnoptSolver,
                          SurfaceTriangle, TriangleSurfaceMesh,
                          VPolytope, HPolyhedron, Sphere, RigidTransform,
-                         RotationMatrix, Rgba)
+                         RotationMatrix, Rgba, Cylinder)
 import mcubes
 from scipy.spatial import ConvexHull
 from scipy.linalg import block_diag
@@ -74,7 +74,6 @@ def plot_surface(meshcat_instance,
     faces[:, :, :, 2] = r[1:, :-1, None]
     faces.shape = (-1, 3)
 
-    # TODO(Russ): support per vertex / Colormap colors.
     meshcat_instance.SetTriangleMesh(
         path,
         vertices.T,
@@ -342,3 +341,32 @@ def plot_points(meshcat, points, name, size = 0.05, color = Rgba(0.06, 0.0, 0, 1
                              RigidTransform(
                              RotationMatrix(), 
                              np.array(pt)))
+        
+
+def plot_triad(pose, meshcat, name,size = 0.2):
+    h = size
+    if 'targ' in name:
+        colors = [Rgba(1,0.5,0, 0.5), Rgba(0.5,1,0, 0.5), Rgba(0.0,0.5,1, 0.5)]
+    else:
+        colors = [Rgba(1,0,0, 1), Rgba(0.,1,0, 1), Rgba(0.0,0.0,1, 1)]
+
+    rot = pose.rotation()@RotationMatrix.MakeYRotation(np.pi/2)
+    pos= pose.translation() +pose.rotation()@np.array([h/2, 0,0])
+    meshcat.SetObject(f"/drake/ik_target{name}/triad1",
+                                   Cylinder(size/20, size),
+                                   colors[0])
+    meshcat.SetTransform(f"/drake/ik_target{name}/triad1",RigidTransform(rot, pos))
+    rot = pose.rotation()@RotationMatrix.MakeXRotation(-np.pi/2)
+    pos= pose.translation() +pose.rotation()@np.array([0,h/2,0])
+
+    meshcat.SetObject(f"/drake/ik_target{name}/triad2",
+                                   Cylinder(size/20,size),
+                                   colors[1])
+    meshcat.SetTransform(f"/drake/ik_target{name}/triad2",RigidTransform(rot, pos))
+    pos= pose.translation().copy()
+    rot = pose.rotation()
+    pos = pos + rot@np.array([0,0,h/2])
+    meshcat.SetObject(f"/drake/ik_target{name}/triad3",
+                                   Cylinder(size/20,size),
+                                   colors[2])
+    meshcat.SetTransform(f"/drake/ik_target{name}/triad3",RigidTransform(rot, pos))

@@ -79,7 +79,7 @@ class VisCliqueInflation:
             if self.approach == 0:
                 cliques_idxs = compute_cliques_REDUVCC(ad_mat, maxtime = 30)
             elif self.approach == 1:
-                cliques_idxs = compute_greedy_clique_partition(ad_mat.toarray(), min_cliuqe_size=self.min_clique_size)
+                cliques_idxs = compute_greedy_clique_partition(ad_mat.toarray(), min_cliuqe_size=self.min_clique_size, worklimit=200)
             elif self.approach == 2:
                 cliques_idxs = compute_minimal_clique_partition_nx(ad_mat)
             elif self.approach == 3:
