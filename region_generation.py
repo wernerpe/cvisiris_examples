@@ -65,8 +65,10 @@ def SNOPT_IRIS_ellipsoid_worker(q_seeds_and_metrics,
         try:
             #r = IrisInRationalConfigurationSpace(plant, plant.GetMyContextFromRoot(context), q_star, snoptiris_options)
             snopt_iris_options.starting_ellipse = metric
-            r = IrisInConfigurationSpace(plant, plant.GetMyMutableContextFromRoot(diagram_context), snopt_iris_options)
-            r_red = r.ReduceInequalities()
+            #r = IrisInConfigurationSpace(plant, plant.GetMyMutableContextFromRoot(diagram_context), snopt_iris_options)
+            r = IrisInConfigurationSpace(plant, diagram_context, snopt_iris_options)
+            ##r_red = r.ReduceInequalities()
+            r_red = r
             #check if returned region is jointlimit box
             if len(r.b()) == len(default_b): 
                 print(f"[SNOPT IRIS Worker] Region failed at {q_seed}")
@@ -74,12 +76,13 @@ def SNOPT_IRIS_ellipsoid_worker(q_seeds_and_metrics,
                 print(f"[SNOPT IRIS Worker]: Region:{reg_indx} / {len(q_seeds)}")
                 regions.append(r_red)
                 successful_seed_ells.append([q_seed, metric])
-                data = {'ra': r_red.A(), 'rb': r_red.b()}
+                if logdir is not None:
+                    data = {'ra': r_red.A(), 'rb': r_red.b()}
 
-                with open(logdir+f"/regions/region_{np.random.rand():.3f}"+".pkl", 'wb') as f:
-                    pickle.dump(data,f)
+                    with open(logdir+f"/regions/region_{np.random.rand():.3f}"+".pkl", 'wb') as f:
+                        pickle.dump(data,f)
         except:
-            print(f"[SNOPT IRIS Worker] Region failed at {q_seed}")
+            print(f"[SNOPT IRIS Worker] Region failed at {q_seed}!")
     return regions, successful_seed_ells
 
 import numpy as np
@@ -111,7 +114,7 @@ def SNOPT_IRIS_ellipsoid_parallel(q_seeds,
                               termination_threshold = snoptiris_options.termination_threshold,
                               num_collision_infeasible_samples = snoptiris_options.num_collision_infeasible_samples,
                               relative_termination_threshold = snoptiris_options.relative_termination_threshold,
-                              logdir = logger.expdir,
+                              logdir = logger.expdir if logger is not None else None,
                               plant_builder = plant_builder)
 
     pool = mp.Pool(processes= split)

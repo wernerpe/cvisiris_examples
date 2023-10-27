@@ -21,9 +21,9 @@ import pydrake
 from environments import get_environment_builder
 from visualization_utils import plot_points, plot_regions
 from pydrake.all import VPolytope, Role
-from task_space_seeding_utils import (get_cvx_hulls_of_bodies, 
-                                      get_task_space_sampler,
-                                      get_ik_problem_solver)
+# from task_space_seeding_utils import (get_cvx_hulls_of_bodies, 
+#                             #          get_task_space_sampler,
+#                              #         get_ik_problem_solver)
 
 from visibility_utils import (get_col_func, 
                               get_sample_cfree_handle,
@@ -42,24 +42,24 @@ scene_graph_context = scene_graph.GetMyMutableContextFromRoot(
 
 geom_names = ['bin_base', 'bin_base', 'shelves_body']
 model_names = ['binL', 'binR', 'shelves']
-cvx_hulls_of_ROI, bodies = get_cvx_hulls_of_bodies(geom_names, model_names, plant, scene_graph, scene_graph_context)
-plot_regions(meshcat, cvx_hulls_of_ROI, opacity=0.2)
+#cvx_hulls_of_ROI, bodies = get_cvx_hulls_of_bodies(geom_names, model_names, plant, scene_graph, scene_graph_context)
+#plot_regions(meshcat, cvx_hulls_of_ROI, opacity=0.2)
 
-ik_solver_S = get_ik_problem_solver(plant, 
-                                  plant_context, 
-                                  [plant.GetFrameByName('body')],
-                                  [np.array([0,0.1,0])], 
-                                  collision_free=True,
-                                  track_orientation=True)
+# ik_solver_S = get_ik_problem_solver(plant, 
+#                                   plant_context, 
+#                                   [plant.GetFrameByName('body')],
+#                                   [np.array([0,0.1,0])], 
+#                                   collision_free=True,
+#                                   track_orientation=True)
 q0  = np.zeros(7)
 plant.SetPositions(plant_context, q0)
 plant.ForcedPublish(plant_context)
 t0 = plant.EvalBodyPoseInWorld(plant_context,  plant.GetBodyByName("body")).translation()       
 
 seed = 1
-N = 1000
-eps = 0.6
-ts_fraction = 0.95
+N = 1500
+eps = 0.4
+ts_fraction = 0.0
 max_iterations_clique = 10
 min_clique_size = 14
 approach = 1
@@ -68,9 +68,9 @@ extend_cliques = False
 
 require_sample_point_is_contained = True
 iteration_limit = 1
-configuration_space_margin = 2.e-3
+configuration_space_margin = 1.e-3
 termination_threshold = -1
-num_collision_infeasible_samples = 15
+num_collision_infeasible_samples = 35
 relative_termination_threshold = 0.02
 
 pts_coverage_estimator = 5000
@@ -96,12 +96,12 @@ q_max =  plant.GetPositionUpperLimits()*1
 
 col_func_handle_ = get_col_func(plant, plant_context)
 sample_cfree = get_sample_cfree_handle(q_min,q_max, col_func_handle_)
-sample_handle_ts = get_task_space_sampler(cvx_hulls_of_ROI, 
-                                          ik_solver_S,
-                                          q0,
-                                          t0,
-                                          collision_free=True
-                                          )
+# sample_handle_ts = get_task_space_sampler(cvx_hulls_of_ROI, 
+#                                           ik_solver_S,
+#                                           q0,
+#                                           t0,
+#                                           collision_free=True
+#                                           )
 estimate_coverage = get_coverage_estimator(sample_cfree, pts = pts_coverage_estimator)
 
 snopt_iris_options = IrisOptions()
@@ -121,14 +121,14 @@ checker = SceneGraphCollisionChecker(model = diagram.Clone(),
                     #configuration_distance_function = _configuration_distance,
                     edge_step_size = 0.125)
 
-def sample_handle_joint(N, M, regions, frac_ts_samples = ts_fraction, collision_free=True):
-    N_ts = int(frac_ts_samples*N)
-    N_c = N-N_ts
-    print(f"[JOINT TS C SAMPLING] Sampling {N_ts} points in taskspace points via IK")
-    pts_q_ts, pts_t, is_full_ts = sample_handle_ts(N_ts, regions, collision_free=collision_free)
-    print(f"[JOINT TS C SAMPLING] Sampling {N_c} points uniformly in Cspace")
-    pts_q_c, is_full = sample_cfree(N_c, M, regions)
-    return np.concatenate((pts_q_ts, pts_q_c), axis=0), is_full
+# def sample_handle_joint(N, M, regions, frac_ts_samples = ts_fraction, collision_free=True):
+#     N_ts = int(frac_ts_samples*N)
+#     N_c = N-N_ts
+#     print(f"[JOINT TS C SAMPLING] Sampling {N_ts} points in taskspace points via IK")
+#     pts_q_ts, pts_t, is_full_ts = sample_handle_ts(N_ts, regions, collision_free=collision_free)
+#     print(f"[JOINT TS C SAMPLING] Sampling {N_c} points uniformly in Cspace")
+#     pts_q_c, is_full = sample_cfree(N_c, M, regions)
+#     return np.concatenate((pts_q_ts, pts_q_c), axis=0), is_full
 
 vgraph_handle = partial(vgraph, checker = checker, parallelize = True) 
 
@@ -144,7 +144,7 @@ iris_handle = partial(SNOPT_IRIS_ellipsoid_parallel,
 vcd = VisCliqueInflation(N, 
                     eps,
                     max_iterations=max_iterations_clique,
-                    sample_cfree = sample_handle_joint,
+                    sample_cfree = sample_cfree,
                     col_handle= col_func_handle_,
                     build_vgraph=vgraph_handle,
                     iris_w_obstacles=iris_handle,

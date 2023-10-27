@@ -8,7 +8,9 @@ from pydrake.all import (StartMeshcat,
                          RigidTransform,
                          MeshcatVisualizerParams,
                          Role,
-                         RollPitchYaw
+                         RollPitchYaw,
+                         Meldis,
+                         AddDefaultVisualization
                          )
 import numpy as np
 import os
@@ -106,22 +108,26 @@ def plant_builder_7dof_iiwa(usemeshcat = False):
 
 def plant_builder_7dof_bins(usemeshcat = False):
     if usemeshcat:
-        meshcat = StartMeshcat()
+        #meshcat = StartMeshcat()
+        meldis = Meldis()
+        meshcat = meldis.meshcat
     builder = RobotDiagramBuilder()
     plant = builder.plant()
     scene_graph = builder.scene_graph()
     parser = builder.parser()
     #parser.package_map().Add("cvisirisexamples", missing directory)
-    if usemeshcat:
-        par = MeshcatVisualizerParams()
-        par.role = Role.kIllustration
-        visualizer = MeshcatVisualizer.AddToBuilder(builder.builder(), scene_graph, meshcat, par)
+    
     directives_file = "7dof_bins_example.yaml"#FindResourceOrThrow() 
     path_repo = os.path.dirname(os.path.abspath('')) #os.path.dirname(os.path.dirname(os.path.realpath(__file__))) # replace with {path to cvisirsexamples repo}
     parser.package_map().Add("cvisiris", path_repo+"/cvisiris_examples/assets")
     directives = LoadModelDirectives(directives_file)
     models = ProcessModelDirectives(directives, plant, parser)
     plant.Finalize()
+    if usemeshcat:
+        #par = MeshcatVisualizerParams()
+        #par.role = Role.kIllustration
+        #visualizer = MeshcatVisualizer.AddToBuilder(builder.builder(), scene_graph, meshcat, par)
+        visualizer = AddDefaultVisualization(builder.builder(), meshcat)
     diagram = builder.Build()
     diagram_context = diagram.CreateDefaultContext()
     plant_context = plant.GetMyContextFromRoot(diagram_context)

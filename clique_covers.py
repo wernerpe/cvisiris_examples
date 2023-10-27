@@ -498,26 +498,29 @@ def compute_minimal_clique_partition_nx(adj_mat):
     return cliques
 
 def get_iris_metrics(cliques, collision_handle):
-    #seed_ellipses = [get_lj_ellipse(k) for k in cliques]
-    seed_ellipses = [Hyperellipsoid.MinimumVolumeCircumscribedEllipsoid(k.T, rank_tol = 1e-12) for k in cliques]
+    seed_ellipses = [get_lj_ellipse(k) for k in cliques]
+    #seed_ellipses = [Hyperellipsoid.MinimumVolumeCircumscribedEllipsoid(k.T, rank_tol = 1e-12) for k in cliques]
     seed_points = []
     for k,se in zip(cliques, seed_ellipses):
-        center = se.center()
-        dim = len(se.center())
-        if collision_handle(center):
-            distances = np.linalg.norm(np.array(k).reshape(-1,dim) - center, axis = 1).reshape(-1)
-            mindist_idx = np.argmin(distances)
-            seed_points.append(k[mindist_idx])
+        if se is not None:
+            center = se.center()
+            dim = len(se.center())
+            if collision_handle(center):
+                distances = np.linalg.norm(np.array(k).reshape(-1,dim) - center, axis = 1).reshape(-1)
+                mindist_idx = np.argmin(distances)
+                seed_points.append(k[mindist_idx])
+            else:
+                seed_points.append(center)
         else:
-            seed_points.append(center)
-
+            print("[IRIS METRIC] ELLIPSOID COMPUTATION FAILED")
     #rescale seed_ellipses
     mean_eig_scaling = 1000
     seed_ellipses_scaled = []
     for e in seed_ellipses:
-        eigs, _ = np.linalg.eig(e.A())
-        mean_eig_size = np.mean(eigs)
-        seed_ellipses_scaled.append(Hyperellipsoid(e.A()*(mean_eig_scaling/mean_eig_size), e.center()))
+        if e is not None:
+            eigs, _ = np.linalg.eig(e.A())
+            mean_eig_size = np.mean(eigs)
+            seed_ellipses_scaled.append(Hyperellipsoid(e.A()*(mean_eig_scaling/mean_eig_size), e.center()))
     #sort by size
     #idxs = np.argsort([s.Volume() for s in seed_ellipses])[::-1]
     hs = seed_points#[seed_points[i] for i in idxs]

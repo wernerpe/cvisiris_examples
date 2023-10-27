@@ -7,12 +7,13 @@ directives:
 # Add iiwa
 - add_model:
     name: iiwa
-    file: package://cvisiris/models/iiwa_description/urdf/iiwa14_spheres_collision.urdf
-
+    #file: package://cvisiris/models/iiwa_description/urdf/iiwa14_spheres_collision.urdf
+    file: package://cvisiris/models/iiwa_description/iiwa7/iiwa7_with_box_collision.sdf
 - add_weld:
     parent: world
-    child: iiwa::base
-
+    #child: iiwa::base
+    child: iiwa::iiwa_link_0
+    
 # Add schunk
 - add_model:
     name: wsg

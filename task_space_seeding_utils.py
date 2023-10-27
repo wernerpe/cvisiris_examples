@@ -104,7 +104,7 @@ def solve_ik_problem(poses,
                 0.1,
             )
     if collision_free:
-        ik.AddMinimumDistanceConstraint(0.001, 0.1)
+        ik.AddMinimumDistanceConstraint(0.01, 0.1)
     prog = ik.get_mutable_prog()
     q = ik.q()
     prog.AddQuadraticErrorCost(np.identity(len(q)), q0, q)

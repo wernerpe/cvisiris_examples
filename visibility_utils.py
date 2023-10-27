@@ -19,10 +19,28 @@ def point_in_regions(pt, regions):
             return True
     return False
 
-def generate_distinct_colors(n):
+def generate_distinct_colors(n, rgb = False):
     cmap = plt.cm.get_cmap('hsv', n)  # Choose a colormap
     colors = [mcolors.rgb2hex(cmap(i)[:3]) for i in range(n)]  # Convert colormap to hexadecimal colors
-    return colors
+    if rgb:
+        return [hex_to_rgb(c) for c in colors]
+    else:
+        return colors
+
+def hex_to_rgb(hex_color):
+    # Remove the leading '#' if present
+    hex_color = hex_color.lstrip('#')
+
+    # Ensure the input is a valid hex color code
+    if len(hex_color) != 6:
+        raise ValueError("Invalid hex color code")
+
+    # Extract the individual color components
+    red = int(hex_color[0:2], 16)/255.0
+    green = int(hex_color[2:4], 16)/255.0
+    blue = int(hex_color[4:6], 16)/255.0
+
+    return red, green, blue
 
 def point_near_regions(pt, regions, tries = 10, eps = 0.1):
     for _ in range(tries):

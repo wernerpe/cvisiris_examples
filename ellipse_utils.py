@@ -39,6 +39,7 @@ def switch_ellipse_description(A, b):
 #         return None, None, None
 
 def get_lj_ellipse(pts):
+    #print(len(pts))
     if len(pts) ==1:
         S = Hyperellipsoid.MakeHypersphere(1e-3, pts[0, :])
         return S#, S.A(), S.center()
@@ -58,7 +59,7 @@ def get_lj_ellipse(pts):
         pt = pt.reshape(dim,1)
         S = prog.NewSymmetricContinuousVariables(dim+1, 'S')
         prog.AddPositiveSemidefiniteConstraint(S)
-        prog.AddLinearEqualityConstraint(S[0,0] == 0.99)
+        prog.AddLinearEqualityConstraint(S[0,0] == 1)
         v = (A@pt + b.reshape(dim,1)).T
         c = (S[1:,1:]-np.eye(dim)).reshape(-1)
         for idx in range(dim):
@@ -71,19 +72,19 @@ def get_lj_ellipse(pts):
     from pydrake.all import MosekSolver, SolverId
     prog.SetSolverOption(SolverId("Mosek"), "tol", 1e-16)
     sol = Solve(prog)
-    print(sol.get_solver_id().name())
+    #print(sol.get_solver_id().name())
     if sol.is_success():
         Aval = sol.GetSolution(A)
         bval = sol.GetSolution(b)
-        print(f"nr pts {len(pts)}")
-        print('first descr')
-        for i,pt in enumerate(pts):
-            print(i," cont ",(Aval@pt + bval).T@(Aval@pt + bval)<=1.0, " val ", (Aval@pt + bval).T@(Aval@pt + bval))
+        #print(f"nr pts {len(pts)}")
+        #print('first descr')
+        # for i,pt in enumerate(pts):
+        #     print(i," cont ",(Aval@pt + bval).T@(Aval@pt + bval)<=1.0, " val ", (Aval@pt + bval).T@(Aval@pt + bval))
 
         HE, _, _ = switch_ellipse_description(sol.GetSolution(A), sol.GetSolution(b))
-        print('second descr')
-        for pt in pts:
-            print(i," cont ",HE.PointInSet(pt), " val ", (pt -HE.center()).T@HE.A().T@HE.A()@(pt -HE.center()))
+        #print('second descr')
+        # for pt in pts:
+        #     print(i," cont ",HE.PointInSet(pt), " val ", (pt -HE.center()).T@HE.A().T@HE.A()@(pt -HE.center()))
 
         return HE
     else:
