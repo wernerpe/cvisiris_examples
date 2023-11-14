@@ -11,12 +11,12 @@ from visibility_logging import CliqueApproachLogger
 from visibility_clique_decomposition import VisCliqueInflation
 from region_generation import SNOPT_IRIS_ellipsoid_parallel
     
-N = 200
+N = 1500
 eps = 0.3
 max_iterations_clique = 10
 min_clique_size = 20
-approach = 1
-ap_names = ['redu', 'greedy', 'nx']
+approach = 3
+ap_names = ['redu', 'greedy', 'nx', 'icvh']
 extend_cliques = False
 
 require_sample_point_is_contained = True

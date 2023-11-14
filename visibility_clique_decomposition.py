@@ -83,8 +83,9 @@ class VisCliqueInflation:
             elif self.approach == 2:
                 cliques_idxs = compute_minimal_clique_partition_nx(ad_mat)
             elif self.approach == 3:
-                print('[VisCliqueDecomp] USING POLYGONAL CVXHULL FORMULATION')
-                cliques_idxs = compute_greedy_clique_partition_convex_hull(ad_mat.toarray(), points, self.min_clique_size)
+                mode = 'iterative'
+                print(f"[VisCliqueDecomp] USING POLYGONAL CVXHULL FORMULATION '{mode}' ")
+                cliques_idxs = compute_greedy_clique_partition_convex_hull(ad_mat.toarray(), points, self.min_clique_size, mode=mode)
             elif self.approach == 4:
                 print('[VisCliqueDecomp] USING ELLPSOIDAL CVXHULL FORMULATION')
                 cliques_idxs, _ = compute_greedy_clique_cover_w_ellipsoidal_convex_hull_constraint(ad_mat.toarray(), np.array(points), smin= self.min_clique_size)

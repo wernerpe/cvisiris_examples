@@ -7,6 +7,7 @@ from pydrake.all import Hyperellipsoid, Solve, CommonSolverOption, MathematicalP
 import numpy as np
 import networkx as nx
 import subprocess
+from pydrake.all import GurobiSolver, ge, le, eq
 
 _REDUVCCPATH = "/home/peter/git/ExtensionCC_test/ExtensionCC"
 
@@ -383,9 +384,64 @@ def max_clique_w_cvx_hull_constraint(adj_mat, graph_vertices, c = None):
     print(result.is_success())
     return -result.get_optimal_cost(), np.where(result.GetSolution(v)>=0.9)[0]
 
-def compute_greedy_clique_partition_convex_hull(adj_mat, pts, smin = 10, mode = 'reduced', d_min = 1e-2, alpha_max = 0.85*np.pi/2):
+def cutting_planes(clique, points, tol=1e-5):
+    
+    n, d = points.shape
+    m = len(clique)
+    
+    prog = MathematicalProgram()
+    x = prog.NewContinuousVariables(m)
+    prog.AddLinearConstraint(ge(x, 0))
+    prog.AddLinearConstraint(sum(x) == 1)
+    constr = prog.AddLinearConstraint(eq(x @ points[clique], np.zeros(d)))
+    cost = prog.AddLinearCost(sum(x))
+    solver = GurobiSolver()
+    
+    counterexamples = []
+    for i in (j for j in range(n) if j not in clique):
+        # next line is confusing but seems to do the right thing
+        constr.evaluator().UpdateUpperBound(points[i])
+        cost.evaluator().UpdateCoefficients(np.random.randn(m))
+        result = solver.Solve(prog)
+        if result.is_success():
+            x_opt = result.GetSolution(x)
+            nonzeros = [clique[j] for j, xj in enumerate(x_opt) if xj > tol]
+            counterexamples.append((i, nonzeros))   
+    return counterexamples
+
+
+def max_clique_iterative_cvx_h_constraint(adj_mat, graph_vertices, c = None):
+    assert adj_mat.shape[0] == len(graph_vertices)
+    n = adj_mat.shape[0]
+    if c is None:
+        c = np.ones((n,))
+    prog = MathematicalProgram()
+    v = prog.NewBinaryVariables(n)
+    prog.AddLinearCost(-np.sum(c*v))
+    for i in range(0,n):
+        for j in range(i+1,n):
+            if adj_mat[i,j] == 0:
+                prog.AddLinearConstraint(v[i] + v[j] <= 1)
+    solver_options = SolverOptions()
+    solver_options.SetOption(CommonSolverOption.kPrintToConsole, 1)
+    #solver = GurobiSolver()
+    while True:
+        # This should be a solver callback...
+        result = Solve(prog, solver_options=solver_options)
+        print(result.get_solver_details().optimizer_time)
+        v_opt = result.GetSolution(v)
+        clique = list(np.where(v_opt > .5)[0])
+        print(len(clique))
+        cuts = cutting_planes(clique, graph_vertices)
+        if len(cuts) == 0:
+            break
+        for i, nonzeros in cuts:
+            prog.AddLinearConstraint(v[i] >= sum(v[nonzeros]) - len(nonzeros) + 1)
+    return -result.get_optimal_cost(), np.array(clique)      
+
+def compute_greedy_clique_partition_convex_hull(adj_mat, pts, smin = 10, mode = 'iterative', d_min = 1e-2, alpha_max = 0.85*np.pi/2):
     assert adj_mat.shape[0] == len(pts)
-    assert mode in ['reduced', 'full']
+    assert mode in ['reduced', 'full', 'iterative']
     cliques = []
     done = False
     pts_curr = pts.copy()
@@ -413,8 +469,12 @@ def compute_greedy_clique_partition_convex_hull(adj_mat, pts, smin = 10, mode = 
     while not done:
         if mode == 'reduced':
             val, ind_max_clique_local = max_clique_w_cvx_hull_constraint_reduced(adj_curr, pts_curr, c, d_min, alpha_max, c_bounds=c_bounds, Mij=Mij)
-        else:
+        elif mode=='full':
             val, ind_max_clique_local = max_clique_w_cvx_hull_constraint(adj_curr, pts_curr,c)
+        elif mode=='iterative':
+            val, ind_max_clique_local = max_clique_iterative_cvx_h_constraint(adj_curr, pts_curr,c)
+        else:
+            raise ValueError(f"mode {mode} invalid")
         index_max_clique_global = np.array([ind_curr[i] for i in ind_max_clique_local])
         c[ind_max_clique_local] = 0
         cliques.append(index_max_clique_global.reshape(-1))

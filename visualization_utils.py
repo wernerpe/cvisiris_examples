@@ -13,6 +13,26 @@ import random
 import colorsys
 from pydrake.all import PiecewisePolynomial
 
+
+def sorted_vertices(vpoly):
+    assert vpoly.ambient_dimension() == 2
+    poly_center = np.sum(vpoly.vertices(), axis=1) / vpoly.vertices().shape[1]
+    vertex_vectors = vpoly.vertices() - np.expand_dims(poly_center, 1)
+    sorted_index = np.arctan2(vertex_vectors[1], vertex_vectors[0]).argsort()
+    return vpoly.vertices()[:, sorted_index]
+
+
+def plot_HPoly(ax, HPoly, color = None, zorder = 0):
+    v = sorted_vertices(VPolytope(HPoly)).T#s
+    v = np.concatenate((v, v[0,:].reshape(1,-1)), axis=0)
+    if color is None:
+        p = ax.plot(v[:,0], v[:,1], linewidth = 2, alpha = 0.7, zorder = zorder)
+    else:
+        p = ax.plot(v[:,0], v[:,1], linewidth = 2, alpha = 0.7, c = color, zorder = zorder)
+
+    ax.fill(v[:,0], v[:,1], alpha = 0.5, c = p[0].get_color(), zorder = zorder)
+
+
 def generate_maximally_different_colors(n):
     """
     Generate n maximally different random colors for matplotlib.
