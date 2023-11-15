@@ -6,11 +6,13 @@ from pydrake.all import (StartMeshcat,
                          LoadModelDirectives,
                          ProcessModelDirectives,
                          RigidTransform,
+                         RotationMatrix,
                          MeshcatVisualizerParams,
                          Role,
                          RollPitchYaw,
                          Meldis,
-                         AddDefaultVisualization
+                         AddDefaultVisualization,
+                         Box
                          )
 import numpy as np
 import os
@@ -32,7 +34,10 @@ def plant_builder_5dof_ur5(use_meshcat = False, cfg = {'add_shelf': True, 'add_g
     return plant, scene_graph, diagram, diagram_context, plant_context, meshcat if use_meshcat else None
 
 def plant_builder_2dof_flipper_obs(usemeshcat = False):
-    meshcat = StartMeshcat()
+    if usemeshcat:
+        #meshcat = StartMeshcat()
+        meldis = Meldis()
+        meshcat = meldis.meshcat
     builder = RobotDiagramBuilder()
     plant = builder.plant()
     scene_graph = builder.scene_graph()
@@ -44,32 +49,53 @@ def plant_builder_2dof_flipper_obs(usemeshcat = False):
     twoDOF_iiwa_asset = rel_path_cvisiris + "assets/twoDOF_iiwa7_with_box_collision.sdf"#FindResourceOrThrow("drake/C_Iris_Examples/assets/twoDOF_iiwa7_with_box_collision.sdf")
 
     box_asset = rel_path_cvisiris + "assets/box_small.urdf" #FindResourceOrThrow("drake/C_Iris_Examples/assets/box_small.urdf")
-
+    roi_asset = rel_path_cvisiris + "assets/roi_box.urdf"
+    obs_asset = rel_path_cvisiris + "assets/2d_obs.urdf"
+    path_repo = os.path.dirname(os.path.abspath('')) #os.path.dirname(os.path.dirname(os.path.realpath(__file__))) # replace with {path to cvisirsexamples repo}
+    parser.package_map().Add("cvisiris", path_repo+"/cvisiris_examples/assets")
     models = []
     models.append(parser.AddModelFromFile(box_asset, "box"))
+    
+    models.append(parser.AddModelFromFile(obs_asset, "obs_box"))
     models.append(parser.AddModelFromFile(twoDOF_iiwa_asset, "iiwatwodof"))
+    models.append(parser.AddModelFromFile(roi_asset, "roi_box"))
     #models.append(parser.AddModelFromFile(oneDOF_iiwa_asset, "iiwaonedof"))
 
     locs = [[0.,0.,0.],
+            [0,0,0,],
             [0.,.55,0.],
-            [0.,-.55,0.]]
+            ]
     plant.WeldFrames(plant.world_frame(), 
         plant.GetFrameByName("base", models[0]),
         RigidTransform(locs[0]))
     plant.WeldFrames(plant.world_frame(), 
-                    plant.GetFrameByName("iiwa_twoDOF_link_0", models[1]), 
-                    RigidTransform(RollPitchYaw([0,0, -np.pi/2]).ToRotationMatrix(), locs[1]))
+        plant.GetFrameByName("base", models[1]),
+        RigidTransform(locs[0]))
+    plant.WeldFrames(plant.world_frame(), 
+        plant.GetFrameByName("base", models[-1]),
+        RigidTransform(locs[0]))
+    plant.WeldFrames(plant.world_frame(), 
+                    plant.GetFrameByName("iiwa_twoDOF_link_0", models[2]), 
+                    RigidTransform(RollPitchYaw([0,0, -np.pi/2]).ToRotationMatrix(), locs[2]))
     # plant.WeldFrames(plant.world_frame(), 
     #                 plant.GetFrameByName("iiwa_oneDOF_link_0", models[2]), 
     #                 RigidTransform(RollPitchYaw([0,0, -np.pi/2]).ToRotationMatrix(), locs[2]))
 
+    # roi_shape = Box(0.1, 0.1, 1)
+
+    # plant.RegisterVisualGeometry(plant.GetBodyByName("base"), 
+    #                              RigidTransform(RollPitchYaw([-np.pi/4,0, 0]).ToRotationMatrix(), np.array([0,0,1])),
+    #                                         roi_shape, "roi_area",
+    #                                         np.array([0, 1., 0., 0.5]))
+    
     plant.Finalize()
     inspector = scene_graph.model_inspector()
-
-    meshcat_params = MeshcatVisualizerParams()
-    meshcat_params.role = Role.kIllustration
-    visualizer = MeshcatVisualizer.AddToBuilder(
-            builder.builder(), scene_graph, meshcat, meshcat_params)
+    if usemeshcat:
+        meshcat_params = MeshcatVisualizerParams()
+        meshcat_params.role = Role.kIllustration
+        visualizer = AddDefaultVisualization(builder.builder(), meshcat)
+    # visualizer = MeshcatVisualizer.AddToBuilder(
+    #         builder.builder(), scene_graph, meshcat, meshcat_params)
     # X_WC = RigidTransform(RollPitchYaw(0,0,0),np.array([5, 4, 2]) ) # some drake.RigidTransform()
     # meshcat.SetTransform("/Cameras/default", X_WC) 
     # meshcat.SetProperty("/Background", "top_color", [0.8, 0.8, 0.6])
@@ -79,7 +105,8 @@ def plant_builder_2dof_flipper_obs(usemeshcat = False):
     diagram_context = diagram.CreateDefaultContext()
     plant_context = plant.GetMyMutableContextFromRoot(diagram_context)
     diagram.ForcedPublish(diagram_context)
-    print(meshcat.web_url())
+    if usemeshcat:
+        print(meshcat.web_url())
     return plant, scene_graph, diagram, diagram_context, plant_context, meshcat if usemeshcat else None
 
 def plant_builder_3dof_flipper(usemeshcat = False):
@@ -230,9 +257,11 @@ def environment_builder_14dof_iiwas(usemeshcat = False):
     return plant, scene_graph, diagram, diagram_context, plant_context, meshcat if usemeshcat else None
 
 def get_environment_builder(environment_name):
-    valid_names = ['3DOFFLIPPER', '5DOFUR5', '7DOFIIWA', '7DOFBINS', '14DOFIIWAS']
+    valid_names = ['2DOFFLIPPER','3DOFFLIPPER', '5DOFUR5', '7DOFIIWA', '7DOFBINS', '14DOFIIWAS']
     if not environment_name in valid_names:
         raise ValueError(f"Choose a valid environment {valid_names}")
+    if environment_name == '2DOFFLIPPER':
+        return plant_builder_2dof_flipper_obs
     if environment_name == '3DOFFLIPPER':
         return plant_builder_3dof_flipper
     elif environment_name == '5DOFUR5':
