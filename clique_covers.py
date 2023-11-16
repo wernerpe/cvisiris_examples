@@ -432,6 +432,8 @@ def max_clique_iterative_cvx_h_constraint(adj_mat, graph_vertices, c = None):
         v_opt = result.GetSolution(v)
         clique = list(np.where(v_opt > .5)[0])
         print(len(clique))
+        if len(clique)==0:
+            break
         cuts = cutting_planes(clique, graph_vertices)
         if len(cuts) == 0:
             break
@@ -476,8 +478,9 @@ def compute_greedy_clique_partition_convex_hull(adj_mat, pts, smin = 10, mode = 
         else:
             raise ValueError(f"mode {mode} invalid")
         index_max_clique_global = np.array([ind_curr[i] for i in ind_max_clique_local])
-        c[ind_max_clique_local] = 0
-        cliques.append(index_max_clique_global.reshape(-1))
+        if len(ind_max_clique_local):
+            c[ind_max_clique_local] = 0
+            cliques.append(index_max_clique_global.reshape(-1))
         if val< smin:
             done = True
     return cliques

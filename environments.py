@@ -57,12 +57,15 @@ def plant_builder_2dof_flipper_obs(usemeshcat = False):
     models.append(parser.AddModelFromFile(box_asset, "box"))
     
     models.append(parser.AddModelFromFile(obs_asset, "obs_box"))
+    models.append(parser.AddModelFromFile(obs_asset, "obs_box2"))
+    models.append(parser.AddModelFromFile(obs_asset, "obs_box3"))
     models.append(parser.AddModelFromFile(twoDOF_iiwa_asset, "iiwatwodof"))
     models.append(parser.AddModelFromFile(roi_asset, "roi_box"))
     #models.append(parser.AddModelFromFile(oneDOF_iiwa_asset, "iiwaonedof"))
 
     locs = [[0.,0.,0.],
             [0,0,0,],
+            [0,0.6,0.19],
             [0.,.55,0.],
             ]
     plant.WeldFrames(plant.world_frame(), 
@@ -72,11 +75,17 @@ def plant_builder_2dof_flipper_obs(usemeshcat = False):
         plant.GetFrameByName("base", models[1]),
         RigidTransform(locs[0]))
     plant.WeldFrames(plant.world_frame(), 
+        plant.GetFrameByName("base", models[2]),
+        RigidTransform(RollPitchYaw([-np.pi/4,0, 0]).ToRotationMatrix(), np.array([0,-0.46,0.43])))
+    plant.WeldFrames(plant.world_frame(), 
+        plant.GetFrameByName("base", models[3]),
+        RigidTransform(RollPitchYaw([-np.pi/2,0, 0]).ToRotationMatrix(), np.array([0,-0.3,0.9])))
+    plant.WeldFrames(plant.world_frame(), 
         plant.GetFrameByName("base", models[-1]),
         RigidTransform(locs[0]))
     plant.WeldFrames(plant.world_frame(), 
-                    plant.GetFrameByName("iiwa_twoDOF_link_0", models[2]), 
-                    RigidTransform(RollPitchYaw([0,0, -np.pi/2]).ToRotationMatrix(), locs[2]))
+                    plant.GetFrameByName("iiwa_twoDOF_link_0", models[-2]), 
+                    RigidTransform(RollPitchYaw([0,0, -np.pi/2]).ToRotationMatrix(), locs[-1]))
     # plant.WeldFrames(plant.world_frame(), 
     #                 plant.GetFrameByName("iiwa_oneDOF_link_0", models[2]), 
     #                 RigidTransform(RollPitchYaw([0,0, -np.pi/2]).ToRotationMatrix(), locs[2]))

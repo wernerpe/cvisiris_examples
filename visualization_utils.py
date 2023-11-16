@@ -54,7 +54,7 @@ def generate_maximally_different_colors(n):
 
     # Shuffle the hues to get random order of colors
     random.shuffle(hues)
-
+   
     # Convert each hue to RGB
     for hue in hues:
         # We keep saturation and value fixed at 0.9 and 0.8 respectively
