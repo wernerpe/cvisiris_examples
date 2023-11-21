@@ -71,18 +71,68 @@ def plant_builder_2dof_flipper_obs(usemeshcat = False):
     plant.WeldFrames(plant.world_frame(), 
         plant.GetFrameByName("base", models[0]),
         RigidTransform(locs[0]))
+    from pydrake.geometry import ProximityProperties, AddContactMaterial
+    from pydrake.all import CoulombFriction
+    proximity_properties = ProximityProperties()
+    AddContactMaterial(dissipation=0.1,
+                        point_stiffness=250.0,
+                        friction=CoulombFriction(0.9, 0.5),
+                        properties=proximity_properties)
+    box_shape = Box(0.1, 0.1, 0.5)
+    frame = plant.GetBodyByName("box1")
+    #X1 = RigidTransform(np.array([0,1.1,0.1]))
+    X1 = RigidTransform(RollPitchYaw(np.pi/10,0,0).ToRotationMatrix(),np.array([0,1.1,0.10]))
+    plant.RegisterVisualGeometry(frame,X1,
+                                              box_shape, "obs1",
+                                              np.array([1, 0., 0., 1]))
+    obs1 = plant.RegisterCollisionGeometry(frame, X1,
+                                              box_shape, "obs1",
+                                               proximity_properties)
+    box_shape = Box(0.05, 0.2, 0.05)
+    frame = plant.GetBodyByName("box1")
+    # X2 = RigidTransform(np.array([0,0.75,-0.75]))
+    X2 = RigidTransform(np.array([0,0.75,10.75]))
+    plant.RegisterVisualGeometry(frame,X2,
+                                              box_shape, "obs2",
+                                              np.array([1, 0., 0., 1]))
+    obs2 = plant.RegisterCollisionGeometry(frame, X2,
+                                              box_shape, "obs2",
+                                               proximity_properties)
+    box_shape = Box(0.05, 0.1, 0.05)
+    # X3 = RigidTransform(np.array([0,1.0,-0.85]))
+    X3 = RigidTransform(np.array([0,1.0,10.85]))
+    plant.RegisterVisualGeometry(frame,X3,
+                                              box_shape, "obs3",
+                                              np.array([1, 0., 0., 1]))
+    obs3 = plant.RegisterCollisionGeometry(frame, X3,
+                                              box_shape, "obs3",
+                                               proximity_properties)
+    
+    box_shape = Box(0.1, 0.1, 0.4)
+    # X3 = RigidTransform(RollPitchYaw(np.pi/2.5,0,0).ToRotationMatrix(), np.array([0,1.1,-0.78]))
+    X3 = RigidTransform(RollPitchYaw(np.pi/3,0,0).ToRotationMatrix(), np.array([0,1.1,0.15]))
+    plant.RegisterVisualGeometry(frame,X3,
+                                              box_shape, "obs4",
+                                              np.array([1, 0., 0., 1]))
+    obs4 = plant.RegisterCollisionGeometry(frame, X3,
+                                              box_shape, "obs4",
+                                               proximity_properties)
+    
+    #obsbox
     plant.WeldFrames(plant.world_frame(), 
         plant.GetFrameByName("base", models[1]),
-        RigidTransform(locs[0]))
+        RigidTransform(np.array([0,0,10])))
+    #obsbox2
     plant.WeldFrames(plant.world_frame(), 
         plant.GetFrameByName("base", models[2]),
-        RigidTransform(RollPitchYaw([-np.pi/4,0, 0]).ToRotationMatrix(), np.array([0,-0.46,0.43])))
+        RigidTransform(RollPitchYaw([-np.pi/4,0, 0]).ToRotationMatrix(), np.array([0,-0.46,10.43])))
+    #obsbox3
     plant.WeldFrames(plant.world_frame(), 
         plant.GetFrameByName("base", models[3]),
-        RigidTransform(RollPitchYaw([-np.pi/2,0, 0]).ToRotationMatrix(), np.array([0,-0.3,0.9])))
+        RigidTransform(RollPitchYaw([-np.pi/2,0, 0]).ToRotationMatrix(), np.array([0,-0.3,10.6])))
     plant.WeldFrames(plant.world_frame(), 
         plant.GetFrameByName("base", models[-1]),
-        RigidTransform(locs[0]))
+        RigidTransform(RollPitchYaw(0,0,0).ToRotationMatrix(), np.array([0,-0.05,0.15])))
     plant.WeldFrames(plant.world_frame(), 
                     plant.GetFrameByName("iiwa_twoDOF_link_0", models[-2]), 
                     RigidTransform(RollPitchYaw([0,0, -np.pi/2]).ToRotationMatrix(), locs[-1]))

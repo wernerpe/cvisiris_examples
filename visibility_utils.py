@@ -128,3 +128,16 @@ def sample_in_union_of_polytopes(num_points, regions, aabb_limits, maxit = int(1
                 print("[sample_in_union_of_polytopes] NO POINT FOUND")
                 return None   
     return pts
+
+def check_visibility_to_regions(pts, regions, checker):
+    centers = [r.ChebyshevCenter() for r in regions]
+    visible = []
+    for pt in pts:
+        vis_loc = []
+        for i,c in enumerate(centers):
+            if checker.CheckEdgeCollisionFreeParallel(pt, c):
+                vis_loc.append(i)
+            
+        visible.append(vis_loc)
+
+    return visible

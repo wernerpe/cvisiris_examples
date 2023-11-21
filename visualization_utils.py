@@ -390,3 +390,46 @@ def plot_triad(pose, meshcat, name,size = 0.2):
                                    Cylinder(size/20,size),
                                    colors[2])
     meshcat.SetTransform(f"/drake/ik_target{name}/triad3",RigidTransform(rot, pos))
+
+
+import pydrake
+def get_shunk_plotter(plant, scene_graph, plant_context, diagram_context):
+
+    query = scene_graph.get_query_output_port().Eval(scene_graph.GetMyContextFromRoot(diagram_context))
+    inspector = query.inspector()
+    a = inspector.GetCollisionCandidates()
+    geomids= []
+    for b, c in a:
+        geomids.append(b)
+        geomids.append(c)
+    ids = list(set(geomids))
+    frame_id_dict = {}
+    for idx in range(len(ids)):
+        #print(idx, plant.GetBodyFromFrameId(inspector.GetFrameId(ids[idx])))
+        if plant.GetBodyFromFrameId(inspector.GetFrameId(ids[idx])).name() =='body':
+            frame_id_dict['body'] = ids[idx]
+        if plant.GetBodyFromFrameId(inspector.GetFrameId(ids[idx])).name() =='left_finger':
+            frame_id_dict['left_finger'] = ids[idx]
+        if plant.GetBodyFromFrameId(inspector.GetFrameId(ids[idx])).name() =='right_finger':
+            frame_id_dict['right_finger'] = ids[idx]
+    print(frame_id_dict)
+    geom_ids = [inspector.GetGeometries(inspector.GetFrameId(frame_id_dict[k]))[0] for k in frame_id_dict.keys()]
+
+    sh_frames = [9,10,11]
+    sh_geom = [inspector.GetShape(id) for id in geom_ids] 
+    sh_names = ['box', 'l','r']
+
+    def plot_endeff_pose(meshcat, q, name = '', color = Rgba(1,1,0.1,0.8)):
+        plant.SetPositions(plant_context, q)
+        tfs = [plant.EvalBodyPoseInWorld(plant_context, plant.get_body(pydrake.multibody.tree.BodyIndex(f))) for f in sh_frames]
+        for n, f, geom in zip(sh_names, tfs, sh_geom):
+            meshcat.SetObject("/iris/shunk/"+name+"/"+n,
+                                    geom,
+                                    color)
+            meshcat.SetTransform("/iris/shunk/"+name+"/"+n, f)
+    
+    def plot_endeff_poses(meshcat, qs, color = Rgba(1,1,0.1,0.8)):
+        for i,q in enumerate(qs):
+            plot_endeff_pose(meshcat, q, f"_{i}", color)
+    
+    return plot_endeff_poses

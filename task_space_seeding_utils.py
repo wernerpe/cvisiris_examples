@@ -138,22 +138,22 @@ def task_space_sampler(num_points_seed_q0_t0_ax_al_tuple,
         t_points = [t0]
         np.random.seed(seed)    
         if preferred_axis_alignment is not None:
-            sc = np.ones(3)
-            sc[preferred_axis_alignment] = 2
-
+            sc = np.array([0.2, 1, 1])
+           
         for i in tqdm(range(n_points)):
             for it in range(MAXIT):
                 if preferred_axis_alignment is not None:
                     vecs = np.random.randn(1,3)*sc
                     vecs = vecs/np.linalg.norm(vecs)
-                    angs = 2*np.pi*(np.random.rand(1)-0.5)
+                    angs = 1.2*(np.random.randn(1))
                     if preferred_axis_alignment ==2:
                         rot_corr = RotationMatrix.MakeXRotation(-np.pi/2)
                     # if preferred_axis_alignment == 1:
                     #     rot_corr = RotationMatrix.MakeYRotation(np.pi/2)
                     if preferred_axis_alignment == 0:
                         rot_corr = RotationMatrix.MakeZRotation(-np.pi/2)
-                    rotmat =  rot_corr@ RotationMatrix(AngleAxis(angs[0], vecs[0,:]) )
+                    rand_rot = RotationMatrix(AngleAxis(angs[0], vecs[0,:]) )
+                    rotmat =  rot_corr@rand_rot
                 else:  
                     rotmat = sample_random_orientations(1)[0]
                 t_point = sample_in_union_of_polytopes(1, cvx_hulls_of_ROI, [ts_min, ts_max]).squeeze() #t_min + t_diff*np.random.rand(3)

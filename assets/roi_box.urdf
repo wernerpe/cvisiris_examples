@@ -18,7 +18,7 @@
     <visual>
       <origin xyz="0 0 .0" rpy="0 0 0"/>
       <geometry>
-        <box size="0.3 0.05 1.0"/>
+        <box size="0.3 0.19 0.7"/>
       </geometry>
       <material name="li"/>
     </visual>

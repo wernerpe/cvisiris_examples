@@ -9,8 +9,11 @@ class DijkstraSPP:
         self.verbose = verbose
         self.safe_sets = []
         self.safe_adjacencies = []
+        self.dim = regions[0].ambient_dimension()
         self.regions = [r for r in regions]
         for id1, r1 in enumerate(regions):
+            if (id1%10) == 0:
+                if self.verbose: print('[DijkstraSPP] Pre-Building adjacency matrix ', id1,'/', len(self.regions))
             for id2, r2 in enumerate(regions):
                 if id1 != id2 and id1 < id2:
                     if r1.IntersectsWith(r2):
@@ -22,6 +25,8 @@ class DijkstraSPP:
         safe_ad = lil_matrix((len(self.safe_sets), len(self.safe_sets)))
         for id in range(len(regions)):
             safeset_idxs_in_region_id = np.where([id in s for s in self.safe_adjacencies])[0]
+            if (id%10) == 0:
+                if self.verbose: print('[DijkstraSPP] Pre-Building safe-adjacency matrix ', id,'/', len(self.regions))
             for i,id1 in enumerate(safeset_idxs_in_region_id[:-1]):
                 for id2 in safeset_idxs_in_region_id[i:]:     
                     safe_ad[id1, id2] = 1
@@ -36,7 +41,10 @@ class DijkstraSPP:
         for i in range(len(self.safe_sets)):
             for j in range(i+1, len(self.safe_sets)):
                 if safe_ad[i,j]==1:
-                    prog.AddCost(np.linalg.norm(repopt[i,:]- repopt[j,:]))
+                    t = prog.NewContinuousVariables(self.dim+1, 't'+str(i*(j+10)))
+                    prog.AddConstraint(eq(t[1:], repopt[i,:]- repopt[j,:]))
+                    prog.AddLorentzConeConstraint(t)
+                    prog.AddCost(t[0])
         result = Solve(prog)
         print(result.is_success())
         self.reppts = result.GetSolution(repopt)
@@ -58,6 +66,7 @@ class DijkstraSPP:
             if dist<0:
                 print('[DijkstraSPP] Points not reachable')
                 return [], -1
+            #bezier_spline = self.smooth_phase(wps, start, target)
             if refine_path:
                 location_wps_optimized, dist_optimized = self.refine_path_SOCP(wps, 
                                                                         start, 
@@ -71,6 +80,43 @@ class DijkstraSPP:
         else:
             print('[DijkstraSPP] Points not in regions')
             return [], -1
+
+    def get_region_sequence(self, wps, start, target):
+        region_sequence = []
+        regions_start = []
+        regions_target = []
+        for i,r in enumerate(self.regions):
+            if r.PointinSet(start):
+                regions_start.append(i) 
+            if r.PointinSet(target):
+                regions_target.append(i)
+        prev = regions_start
+        for i in range(len(wps)):
+            region_idx = list(set(prev)&set(self.safe_adjacencies[wps[i]]))
+            if len(region_idx)==0:
+                raise ValueError("This should not happen")
+            region_sequence.append(region_idx[0])
+            prev = self.safe_adjacencies[wps[i]]
+        region_idx = list(set(prev)&set(regions_target))
+        if len(region_idx)==0:
+                raise ValueError("This should not happen")  
+        region_sequence.append(region_idx[0])
+        return region_sequence
+    
+    def get_distances(self, wps, start, target):
+        dists = []
+        prev = start
+        for wp in wps:
+            dists.append(np.linalg.norm(prev-self.reppts[wp,:]))
+            prev = self.reppts[wp,:]
+        dists.append(np.linalg.norm(prev- target))
+        return dists
+    
+    def smooth_phase(self, wps, start, target):
+        region_sequence = self.get_region_sequence(wps[1:-1], start, target)
+        distances = self.get_distances(wps[1:-1], start, target)
+        init_times = np.cumsum(distances)
+        
 
 
     def dijkstra_in_configspace(self, adj_mat):
@@ -96,9 +142,16 @@ class DijkstraSPP:
 
 
     def extend_adjacency_mat(self, start, target):
+        N = self.dist_mat.shape[0] + 2
+        data = list(self.dist_mat.data)
+        rows = list(self.dist_mat.row)
+        cols = list(self.dist_mat.col)
+        start_adj_idx = N-2
+        target_adj_idx = N-1
         #first check point memberships
         start_idx = []
         target_idx = []
+        fixed_idxs = []
         for idx, r in enumerate(self.regions):
             if r.PointInSet(start):
                 start_idx.append(idx)
@@ -106,33 +159,41 @@ class DijkstraSPP:
                 target_idx.append(idx)
         if len(start_idx)==0 or len(target_idx)==0:
             print('[DijkstraSPP] Points not in set, idxs', start_idx,', ', target_idx)
-            return None
-        N = self.dist_mat.shape[0] + 2
-        data = list(self.dist_mat.data)
-        rows = list(self.dist_mat.row)
-        cols = list(self.dist_mat.col)
-        start_adj_idx = N-2
-        target_adj_idx = N-1
-        for id in start_idx:
-            safeset_idxs_in_region_id = np.where([id in s for s in self.safe_adjacencies])[0]
-            for idx in safeset_idxs_in_region_id:
-                dist = np.linalg.norm(start - self.reppts[idx, :])
-                data.append(dist)
-                rows.append(start_adj_idx)
-                cols.append(idx)
-                data.append(dist)
-                rows.append(idx)
-                cols.append(start_adj_idx)
-        for id in target_idx:
-            safeset_idxs_in_region_id = np.where([id in s for s in self.safe_adjacencies])[0]
-            for idx in safeset_idxs_in_region_id:
-                dist = np.linalg.norm(target - self.reppts[idx, :])
-                data.append(dist)
-                rows.append(target_adj_idx)
-                cols.append(idx)
-                data.append(dist)
-                rows.append(idx)
-                cols.append(target_adj_idx)
+            print('[DijkstraSPP] Attempting visibility extension')
+            fixed_idxs = []
+            return ad_mat_extend, fixed_idxs
+        
+        if len(start_idx)==0:
+            #distances = np.linalg.norm(start - self.reppts, axis = 1)
+            #idx_sort = np.argsort(distances)[::-1]
+            print('[DijkstraSPP] Attempting visibility extension')
+            idx_vis_start = []
+            for idx_r, rp in enumerate(self.reppts):
+                if self.checker.CheckEdgeCollisionFreeParallel(start, rp):
+                    idx_vis_start.append(idx_r)
+            fixed_idxs.append(1)
+        if len(start_idx):
+            for id in start_idx:
+                safeset_idxs_in_region_id = np.where([id in s for s in self.safe_adjacencies])[0]
+                for idx in safeset_idxs_in_region_id:
+                    dist = np.linalg.norm(start - self.reppts[idx, :])
+                    data.append(dist)
+                    rows.append(start_adj_idx)
+                    cols.append(idx)
+                    data.append(dist)
+                    rows.append(idx)
+                    cols.append(start_adj_idx)
+        if len(target_idx):
+            for id in target_idx:
+                safeset_idxs_in_region_id = np.where([id in s for s in self.safe_adjacencies])[0]
+                for idx in safeset_idxs_in_region_id:
+                    dist = np.linalg.norm(target - self.reppts[idx, :])
+                    data.append(dist)
+                    rows.append(target_adj_idx)
+                    cols.append(idx)
+                    data.append(dist)
+                    rows.append(idx)
+                    cols.append(target_adj_idx)
         if len(list(set(start_idx)& set(target_idx))):
             dist = np.linalg.norm(target - start)
             data.append(dist)
@@ -143,7 +204,7 @@ class DijkstraSPP:
             cols.append(target_adj_idx)     
             
         ad_mat_extend = coo_matrix((data, (rows, cols)), shape=(N, N))
-        return ad_mat_extend
+        return ad_mat_extend, fixed_idxs
     
     def refine_path_SOCP(self, wps, start, target):
             #intermediate_nodes = [self.node_intersections[idx] for idx in wps[1:-1]]
@@ -188,3 +249,112 @@ class DijkstraSPP:
             else:
                 print("[DijkstraSPP] Refine path SCOP failed")
                 return None, None
+            
+
+
+
+################# COPIED FROM FPP CODEBASE##########################################
+#https://github.com/cvxgrp/fastpathplanning/blob/new_retiming/fastpathplanning/bezier.py
+from scipy.special import binom
+from bisect import bisect
+
+class BezierCurve:
+
+    def __init__(self, points, a=0, b=1):
+
+        assert b > a
+
+        self.points = points
+        self.M = points.shape[0] - 1
+        self.d = points.shape[1]
+        self.a = a
+        self.b = b
+        self.duration = b - a
+
+    def __call__(self, t):
+
+        c = np.array([self.berstein(t, n) for n in range(self.M + 1)])
+        return c.T.dot(self.points)
+
+    def berstein(self, t, n):
+
+        c1 = binom(self.M, n)
+        c2 = (t - self.a) / self.duration 
+        c3 = (self.b - t) / self.duration
+        value = c1 * c2 ** n * c3 ** (self.M - n) 
+
+        return value
+
+    def start_point(self):
+
+        return self.points[0]
+
+    def end_point(self):
+
+        return self.points[-1]
+        
+    def derivative(self):
+
+        points = (self.points[1:] - self.points[:-1]) * (self.M / self.duration)
+
+        return BezierCurve(points, self.a, self.b)
+
+    def l2_squared(self):
+
+        A = l2_matrix(self.M, self.d)
+        p = self.points.flatten()
+
+        return p.dot(A.dot(p)) * self.duration
+    
+def l2_matrix(M, d):
+
+    A = np.zeros((M + 1, M + 1))
+    for m in range(M + 1):
+        for n in range(M + 1):
+            A[m, n] = binom(M, m) * binom(M, n) / binom(2 * M, m + n)
+    A /= (2 * M + 1)
+    A_kron = np.kron(A, np.eye(d))
+
+    return A_kron
+
+class CompositeBezierCurve:
+
+    def __init__(self, beziers):
+
+        for bez1, bez2 in zip(beziers[:-1], beziers[1:]):
+            assert bez1.b == bez2.a
+            assert bez1.d == bez2.d
+
+        self.beziers = beziers
+        self.N = len(self.beziers)
+        self.d = beziers[0].d
+        self.a = beziers[0].a
+        self.b = beziers[-1].b
+        self.duration = self.b - self.a
+        self.transition_times = [self.a] + [bez.b for bez in beziers]
+
+    def find_segment(self, t):
+
+        return min(bisect(self.transition_times, t) - 1, self.N - 1)
+
+    def __call__(self, t):
+
+        i = self.find_segment(t)
+
+        return self.beziers[i](t)
+
+    def start_point(self):
+
+        return self.beziers[0].start_point()
+
+    def end_point(self):
+
+        return self.beziers[-1].end_point()
+
+    def derivative(self):
+
+        return CompositeBezierCurve([b.derivative() for b in self.beziers])
+
+    def l2_squared(self):
+
+        return sum(bez.l2_squared() for bez in self.beziers)
