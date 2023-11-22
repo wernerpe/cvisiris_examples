@@ -21,8 +21,9 @@ class DijkstraSPP:
                         self.safe_sets.append(r1.Intersection(r2))
                         self.safe_adjacencies.append([id1, id2])
                         
-        reppts = np.array([s.ChebyshevCenter() for s in self.safe_sets])
-        
+        self.safe_region_centers = np.array([s.ChebyshevCenter() for s in self.safe_sets])
+        self.region_centers = np.array([r.ChebyshevCenter() for r in self.regions])
+
         safe_ad = lil_matrix((len(self.safe_sets), len(self.safe_sets)))
         for id in range(len(regions)):
             safeset_idxs_in_region_id = np.where([id in s for s in self.safe_adjacencies])[0]
@@ -35,8 +36,8 @@ class DijkstraSPP:
                     
         #optimize_reppts
         prog = MathematicalProgram()
-        repopt = prog.NewContinuousVariables(*reppts.shape)
-        if self.verbose: print(f"[DijkstraSPP] Optimizing {len(reppts)} pointlocations in safe-sets")
+        repopt = prog.NewContinuousVariables(*self.safe_region_centers.shape)
+        if self.verbose: print(f"[DijkstraSPP] Optimizing {len(self.safe_region_centers)} point locations in safe sets")
         for i, s in enumerate(self.safe_sets):
             s.AddPointInSetConstraints(prog, repopt[i,:])
 
@@ -50,12 +51,28 @@ class DijkstraSPP:
         result = Solve(prog)
         print(result.is_success())
         self.reppts = result.GetSolution(repopt)
-        dist_mat = lil_matrix((len(self.safe_sets), len(self.safe_sets)))
+        for i in range(len(self.safe_sets)):
+            pt_proj = project_point_on_convex_set(self.reppts[i,:], self.safe_sets[i])
+            self.reppts[i, :] = pt_proj.squeeze()
+
+        self.reppts = np.concatenate((self.reppts, self.region_centers), axis = 0)
+
+        dist_mat = lil_matrix((len(self.safe_sets)+len(self.regions), len(self.safe_sets)+len(self.regions)))
         for i in range(len(self.safe_sets)):
             for j in range(i+1, len(self.safe_sets)):
                 if safe_ad[i,j]==1:
                     dist = np.linalg.norm(self.reppts[i,:]- self.reppts[j,:])
                     dist_mat[i,j] = dist_mat[j,i] = dist
+        for r_id in range(len(regions)):
+            #add distances from region centers to safesets
+            safeset_idxs_in_region_id = np.where([r_id in s for s in self.safe_adjacencies])[0]
+            for ss_id in safeset_idxs_in_region_id:
+                safe_set_pt = self.reppts[ss_id]
+                region_center = self.region_centers[r_id]
+                dist = np.linalg.norm(safe_set_pt- region_center)
+                dist_mat[len(self.safe_sets)+r_id,ss_id] = dist
+                dist_mat[ss_id, len(self.safe_sets)+r_id] = dist
+
         self.dist_mat = dist_mat.tocoo()
     
     def solve(self, 
@@ -69,7 +86,7 @@ class DijkstraSPP:
                 print('[DijkstraSPP] Points not reachable')
                 return [], -1
             #bezier_spline = self.smooth_phase(wps, start, target)
-            if refine_path:
+            if refine_path and len(wps)>2:
                 location_wps_optimized, dist_optimized = self.refine_path_SOCP(wps, 
                                                                         start, 
                                                                         target,
@@ -159,38 +176,43 @@ class DijkstraSPP:
             if r.PointInSet(target):
                 target_idx.append(idx)
         if len(start_idx)==0:
-            #distances = np.linalg.norm(start - self.reppts, axis = 1)
-            #idx_sort = np.argsort(distances)[::-1]
-            print('[DijkstraSPP] Attempting visibility extension')
+            distances = np.linalg.norm(start - self.reppts[len(self.safe_sets):], axis = 1)
+            idx_sort = np.argsort(distances)
+            print('[DijkstraSPP] Attempting visibility extension for start')
             idx_vis_start = []
-            for idx_r, rp in enumerate(self.reppts):
-                if self.checker.CheckEdgeCollisionFreeParallel(start, rp):
+            for idx_r in idx_sort:
+                idx_r_corrected = len(self.safe_sets)+idx_r
+                if self.checker.CheckEdgeCollisionFreeParallel(start, self.region_centers[idx_r,:]):
+                    #append region index
                     idx_vis_start.append(idx_r)
-                    dist = np.linalg.norm(start-rp)
+                    dist = np.linalg.norm(start-self.reppts[idx_r_corrected])
                     data.append(dist)
                     rows.append(start_adj_idx)
-                    cols.append(idx_r)
+                    cols.append(idx_r_corrected)
                     data.append(dist)
-                    rows.append(idx_r)
+                    rows.append(idx_r_corrected)
                     cols.append(start_adj_idx)
+                    break
             if len(idx_vis_start) ==0:
                 return None, None
             fixed_idxs.append(1)
         if len(target_idx)==0:
-            #distances = np.linalg.norm(start - self.reppts, axis = 1)
-            #idx_sort = np.argsort(distances)[::-1]
-            print('[DijkstraSPP] Attempting visibility extension')
+            distances = np.linalg.norm(target - self.reppts[len(self.safe_sets):], axis = 1)
+            idx_sort = np.argsort(distances)
+            print('[DijkstraSPP] Attempting visibility extension for end')
             idx_vis_target = []
-            for idx_r, rp in enumerate(self.reppts):
-                if self.checker.CheckEdgeCollisionFreeParallel(start, rp):
+            for idx_r in idx_sort:
+                idx_r_corrected = len(self.safe_sets)+idx_r
+                if self.checker.CheckEdgeCollisionFreeParallel(target, self.region_centers[idx_r]):
                     idx_vis_target.append(idx_r)
-                    dist = np.linalg.norm(target-rp)
+                    dist = np.linalg.norm(target-self.reppts[idx_r_corrected])
                     data.append(dist)
                     rows.append(target_adj_idx)
-                    cols.append(idx_r)
+                    cols.append(idx_r_corrected)
                     data.append(dist)
-                    rows.append(idx_r)
+                    rows.append(idx_r_corrected)
                     cols.append(target_adj_idx)
+                    break
             if len(idx_vis_target) ==0:
                 return None, None
             fixed_idxs.append(-2)
@@ -216,7 +238,9 @@ class DijkstraSPP:
                     data.append(dist)
                     rows.append(idx)
                     cols.append(target_adj_idx)
-        if len(list(set(start_idx)& set(target_idx))):
+
+        #both in the same set
+        if len(list(set(start_idx)& set(target_idx))) or self.checker.CheckEdgeCollisionFreeParallel(start, target):
             dist = np.linalg.norm(target - start)
             data.append(dist)
             rows.append(target_adj_idx)
@@ -229,55 +253,76 @@ class DijkstraSPP:
         return ad_mat_extend, fixed_idxs
     
     def refine_path_SOCP(self, wps, start, target, fixed_idx):
-            #intermediate_nodes = [self.node_intersections[idx] for idx in wps[1:-1]]
-            dim = len(start)
-            prog = MathematicalProgram()
-            wps = np.array(wps)
-            int_waypoints = prog.NewContinuousVariables(len(wps[1:-1]), dim)
-            for i, wp in enumerate(wps[1:-1]):
+        #intermediate_nodes = [self.node_intersections[idx] for idx in wps[1:-1]]
+        dim = len(start)
+        prog = MathematicalProgram()
+        wps = np.array(wps)
+        int_waypoints = prog.NewContinuousVariables(len(wps[1:-1]), dim)
+        #convert fixed_idx 
+        fixed_idx_conv = [len(wps)+i if i<0 else i for i in fixed_idx]
+        for i, wp in enumerate(wps[1:-1]):
+            if wp<len(self.safe_sets):
                 self.safe_sets[wp].AddPointInSetConstraints(prog, int_waypoints[i,:])
-            #convert fixed_idx 
-            fixed_idx_conv = [len(wps)+i if i<0 else i for i in fixed_idx]
-            for i in fixed_idx_conv:
-                prog.AddLinearConstraint(eq(int_waypoints[i-1,:], self.reppts[wps[1:-1][i-1],:]))
+            else:
+                #point must be fixed
+                if not i+1 in fixed_idx_conv:
+                    raise ValueError("""This should not happen, can happen in very rare occasions where t
+                                     chebyshev center is perfectly alligned with the represantative points for the safe sets""")
 
-            prev = start
-            cost = 0 
-            for idx in range(len(wps[1:-1])):
-                t = prog.NewContinuousVariables(dim+1, 't'+str(idx))
-                prog.AddConstraint(eq(t[1:], prev-int_waypoints[idx]))
-                prev = int_waypoints[idx]
-                prog.AddLorentzConeConstraint(t)
-                cost += t[0]
-            t = prog.NewContinuousVariables(dim+1, 'tend')
-            prog.AddConstraint(eq(t[1:], prev-target))
+        for i in fixed_idx_conv:
+            prog.AddLinearConstraint(eq(int_waypoints[i-1,:], self.reppts[wps[1:-1][i-1],:]))
+
+        prev = start
+        cost = 0 
+        for idx in range(len(wps[1:-1])):
+            t = prog.NewContinuousVariables(dim+1, 't'+str(idx))
+            prog.AddConstraint(eq(t[1:], prev-int_waypoints[idx]))
+            prev = int_waypoints[idx]
             prog.AddLorentzConeConstraint(t)
             cost += t[0]
-            prog.AddCost(cost)
-
-            res = Solve(prog)
-            if res.is_success():
-                path = [start]
-                for i in res.GetSolution(int_waypoints):
-                    path.append(i)
-                path.append(target)
-                wps_start = [self.reppts[idx] for idx in wps[1:-1]]
-                dist_start = 0
-                prev = start
-                for wp in wps_start + [target]:
-                    #dist_start += np.linalg.norm()#* np.array([4.0,3.5,3,2.5,2,2.5,1])
-                    a = prev-wp
-                    dist_start += np.sqrt(a.T@a)
-                    prev = wp
-                if self.verbose: print("[DijkstraSPP] optimized distance/ start-distance = {opt:.2f} / {start:.2f} = {res:.2f}".format(opt = res.get_optimal_cost(), start = dist_start, res = res.get_optimal_cost()/dist_start))
-                return path, res.get_optimal_cost()
-            else:
-                print("[DijkstraSPP] Refine path SCOP failed")
-                return None, None
+        t = prog.NewContinuousVariables(dim+1, 'tend')
+        prog.AddConstraint(eq(t[1:], prev-target))
+        prog.AddLorentzConeConstraint(t)
+        cost += t[0]
+        prog.AddCost(cost)
+        
+        res = Solve(prog)
+        if res.is_success():
+            path = [start]
+            for i in res.GetSolution(int_waypoints):
+                path.append(i)
+            path.append(target)
+            wps_start = [self.reppts[idx] for idx in wps[1:-1]]
+            dist_start = 0
+            prev = start
+            for wp in wps_start + [target]:
+                #dist_start += np.linalg.norm()#* np.array([4.0,3.5,3,2.5,2,2.5,1])
+                a = prev-wp
+                dist_start += np.sqrt(a.T@a)
+                prev = wp
+            if self.verbose: print("[DijkstraSPP] optimized distance/ start-distance = {opt:.2f} / {start:.2f} = {res:.2f}".format(opt = res.get_optimal_cost(), start = dist_start, res = res.get_optimal_cost()/dist_start))
+            return path, res.get_optimal_cost()
+        else:
+            print("[DijkstraSPP] Refine path SCOP failed")
+            return wps, [start,target]
             
-
-
-
+def project_point_on_convex_set(pt, set):
+    if set.PointInSet(pt):
+        return pt
+    else:
+        prog = MathematicalProgram()
+        dim = len(pt)
+        pt_proj = prog.NewContinuousVariables(*pt.shape)
+        set.AddPointInSetConstraints(prog, pt_proj)
+        t = prog.NewContinuousVariables(dim+1, 't')
+        prog.AddConstraint(eq(t[1:], pt_proj- pt))
+        prog.AddLorentzConeConstraint(t)
+        cost = t[0]
+        result = Solve(prog)
+        if result.is_success():
+            return result.GetSolution(pt_proj)
+        else:
+            raise ValueError("Cannot project point")
 ################# COPIED FROM FPP CODEBASE##########################################
 #https://github.com/cvxgrp/fastpathplanning/blob/new_retiming/fastpathplanning/bezier.py
 from scipy.special import binom
