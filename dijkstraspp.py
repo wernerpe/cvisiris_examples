@@ -5,8 +5,9 @@ from scipy.sparse.csgraph import dijkstra
 from scipy.sparse import lil_matrix 
 
 class DijkstraSPP:
-    def __init__(self, regions, verbose = True):
+    def __init__(self, regions, checker, verbose = True):
         self.verbose = verbose
+        self.checker = checker
         self.safe_sets = []
         self.safe_adjacencies = []
         self.dim = regions[0].ambient_dimension()
@@ -35,6 +36,7 @@ class DijkstraSPP:
         #optimize_reppts
         prog = MathematicalProgram()
         repopt = prog.NewContinuousVariables(*reppts.shape)
+        if self.verbose: print(f"[DijkstraSPP] Optimizing {len(reppts)} pointlocations in safe-sets")
         for i, s in enumerate(self.safe_sets):
             s.AddPointInSetConstraints(prog, repopt[i,:])
 
@@ -60,9 +62,9 @@ class DijkstraSPP:
               start,
               target,
               refine_path = True):
-        ad_mat = self.extend_adjacency_mat(start, target)
+        ad_mat, fixed_idx = self.extend_adjacency_mat(start, target)
         if ad_mat is not None:
-            wps, dist = self.dijkstra_in_configspace(adj_mat=ad_mat)
+            wps, dist = self.dijkstra_in_configspace(ad_mat)
             if dist<0:
                 print('[DijkstraSPP] Points not reachable')
                 return [], -1
@@ -70,7 +72,8 @@ class DijkstraSPP:
             if refine_path:
                 location_wps_optimized, dist_optimized = self.refine_path_SOCP(wps, 
                                                                         start, 
-                                                                        target, 
+                                                                        target,
+                                                                        fixed_idx 
                                                                         )
                 return location_wps_optimized, dist_optimized
             
@@ -117,8 +120,6 @@ class DijkstraSPP:
         distances = self.get_distances(wps[1:-1], start, target)
         init_times = np.cumsum(distances)
         
-
-
     def dijkstra_in_configspace(self, adj_mat):
         # convention for start and target: source point is second to last and target is last point
         src = adj_mat.shape[0] -2
@@ -157,12 +158,6 @@ class DijkstraSPP:
                 start_idx.append(idx)
             if r.PointInSet(target):
                 target_idx.append(idx)
-        if len(start_idx)==0 or len(target_idx)==0:
-            print('[DijkstraSPP] Points not in set, idxs', start_idx,', ', target_idx)
-            print('[DijkstraSPP] Attempting visibility extension')
-            fixed_idxs = []
-            return ad_mat_extend, fixed_idxs
-        
         if len(start_idx)==0:
             #distances = np.linalg.norm(start - self.reppts, axis = 1)
             #idx_sort = np.argsort(distances)[::-1]
@@ -171,7 +166,34 @@ class DijkstraSPP:
             for idx_r, rp in enumerate(self.reppts):
                 if self.checker.CheckEdgeCollisionFreeParallel(start, rp):
                     idx_vis_start.append(idx_r)
+                    dist = np.linalg.norm(start-rp)
+                    data.append(dist)
+                    rows.append(start_adj_idx)
+                    cols.append(idx_r)
+                    data.append(dist)
+                    rows.append(idx_r)
+                    cols.append(start_adj_idx)
+            if len(idx_vis_start) ==0:
+                return None, None
             fixed_idxs.append(1)
+        if len(target_idx)==0:
+            #distances = np.linalg.norm(start - self.reppts, axis = 1)
+            #idx_sort = np.argsort(distances)[::-1]
+            print('[DijkstraSPP] Attempting visibility extension')
+            idx_vis_target = []
+            for idx_r, rp in enumerate(self.reppts):
+                if self.checker.CheckEdgeCollisionFreeParallel(start, rp):
+                    idx_vis_target.append(idx_r)
+                    dist = np.linalg.norm(target-rp)
+                    data.append(dist)
+                    rows.append(target_adj_idx)
+                    cols.append(idx_r)
+                    data.append(dist)
+                    rows.append(idx_r)
+                    cols.append(target_adj_idx)
+            if len(idx_vis_target) ==0:
+                return None, None
+            fixed_idxs.append(-2)
         if len(start_idx):
             for id in start_idx:
                 safeset_idxs_in_region_id = np.where([id in s for s in self.safe_adjacencies])[0]
@@ -206,16 +228,19 @@ class DijkstraSPP:
         ad_mat_extend = coo_matrix((data, (rows, cols)), shape=(N, N))
         return ad_mat_extend, fixed_idxs
     
-    def refine_path_SOCP(self, wps, start, target):
+    def refine_path_SOCP(self, wps, start, target, fixed_idx):
             #intermediate_nodes = [self.node_intersections[idx] for idx in wps[1:-1]]
             dim = len(start)
             prog = MathematicalProgram()
             wps = np.array(wps)
-            
             int_waypoints = prog.NewContinuousVariables(len(wps[1:-1]), dim)
             for i, wp in enumerate(wps[1:-1]):
                 self.safe_sets[wp].AddPointInSetConstraints(prog, int_waypoints[i,:])
-            
+            #convert fixed_idx 
+            fixed_idx_conv = [len(wps)+i if i<0 else i for i in fixed_idx]
+            for i in fixed_idx_conv:
+                prog.AddLinearConstraint(eq(int_waypoints[i-1,:], self.reppts[wps[1:-1][i-1],:]))
+
             prev = start
             cost = 0 
             for idx in range(len(wps[1:-1])):
