@@ -423,10 +423,10 @@ def get_shunk_plotter(plant, scene_graph, plant_context, diagram_context):
         plant.SetPositions(plant_context, q)
         tfs = [plant.EvalBodyPoseInWorld(plant_context, plant.get_body(pydrake.multibody.tree.BodyIndex(f))) for f in sh_frames]
         for n, f, geom in zip(sh_names, tfs, sh_geom):
-            meshcat.SetObject("/iris/shunk/"+name+"/"+n,
+            meshcat.SetObject("/shunk/"+name+"/"+n,
                                     geom,
                                     color)
-            meshcat.SetTransform("/iris/shunk/"+name+"/"+n, f)
+            meshcat.SetTransform("/shunk/"+name+"/"+n, f)
     
     def plot_endeff_poses(meshcat, qs, color = Rgba(1,1,0.1,0.8)):
         for i,q in enumerate(qs):

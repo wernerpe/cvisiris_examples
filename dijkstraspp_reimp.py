@@ -6,7 +6,7 @@ from dijkstraspp import DijkstraSPP
 
 
 # points = np.array([[0,-1.8],[-5,5]])
-points = np.array([[2,-2],[-6,5]])
+points = np.array([[2,-2],[-16,5]])
 center_points = np.array([[0, 0],
                           [1.3, 1.4],
                           [2.2, 4.2],
