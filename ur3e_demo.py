@@ -26,21 +26,26 @@ from pydrake.math import (RigidTransform, RollPitchYaw)
 #from pydrake.solvers import MosekSolver
 #from pydrake.solvers import OsqpSolver
 #from pydrake.solvers import mathematicalprogram as mp
-from pydrake.all import StartMeshcat
+from pydrake.all import StartMeshcat, Meldis, AddDefaultVisualization
 from pydrake.planning import RobotDiagram, RobotDiagramBuilder
+import os
+
 class UrDiagram:
 
     diagram: Diagram
     plant: MultibodyPlant
     scene_graph: SceneGraph
-    meshcat: Meshcat
+    #meshcat: Meshcat
     visualizer: MeshcatVisualizer
     ur_instances: typing.List[ModelInstanceIndex]
     gripper_instances: typing.List[ModelInstanceIndex]
 
     def __init__(self, num_ur: int, weld_wrist: bool, add_shelf: bool,
                  add_gripper: bool, use_meshcat: bool = False):
-        if use_meshcat: self.meshcat = StartMeshcat()
+        if use_meshcat: 
+            meldis = Meldis()
+            self.meshcat = meldis.meshcat
+            #self.meshcat = StartMeshcat()
         # builder = DiagramBuilder()
         # self.plant, self.scene_graph = AddMultibodyPlantSceneGraph(
         #     builder, 0.0)
@@ -49,7 +54,8 @@ class UrDiagram:
         self.plant = self.robotdiagrambuilder.plant()
         self.scene_graph = self.robotdiagrambuilder.scene_graph()
         parser = self.robotdiagrambuilder.parser()
-
+        path_repo = os.path.dirname(os.path.abspath('')) #os.path.dirname(os.path.dirname(os.path.realpath(__file__))) # replace with {path to cvisirsexamples repo}
+        parser.package_map().Add("cvisiris", path_repo+"/cvisiris_examples/assets")
         if weld_wrist:
             ur_file_name = "ur3e_cylinder_weld_wrist.urdf"
         else:
@@ -57,8 +63,9 @@ class UrDiagram:
                 ur_file_name = "ur3e_cylinder_revolute_wrist.urdf"
             elif num_ur == 2:
                 ur_file_name = "ur3e_cylinder_revolute_wrist_collision_visual.urdf"
-        ur_file_path = FindResourceOrThrow("drake/manipulation/models/ur3e/" +
-                                           ur_file_name)
+        ur_file_path = path_repo+"/cvisiris_examples/assets/models/ur3e/"+ur_file_name
+        # FindResourceOrThrow("cvisiris/models/ur3e/" +
+        #                                    ur_file_name)
         self.ur_instances = []
         self.gripper_instances = []
         for ur_count in range(num_ur):
@@ -74,9 +81,10 @@ class UrDiagram:
                     gripper_file = "schunk_wsg_50_welded_fingers.sdf"
                 elif num_ur == 2:
                     gripper_file = "schunk_wsg_50_welded_fingers_collision_visual.sdf"
-                gripper_file_path = FindResourceOrThrow(
-                    "drake/manipulation/models/wsg_50_description/sdf/" +
-                    gripper_file)
+                gripper_file_path =path_repo+"/cvisiris_examples/assets/models/wsg_50_description/sdf/" +gripper_file 
+                #FindResourceOrThrow(
+                    
+                    #)
                 gripper_instance = parser.AddModelFromFile(
                     gripper_file_path, f"schunk{ur_count}")
                 self.gripper_instances.append(gripper_instance)
@@ -184,8 +192,8 @@ class UrDiagram:
         if use_meshcat:
             meshcat_params = MeshcatVisualizerParams()
             meshcat_params.role = Role.kIllustration
-            self.visualizer = MeshcatVisualizer.AddToBuilder(
-                self.robotdiagrambuilder.builder(), self.scene_graph, self.meshcat, meshcat_params)
+            self.visualizer =  visualizer = AddDefaultVisualization(self.robotdiagrambuilder.builder(), self.meshcat) #MeshcatVisualizer.AddToBuilder(
+                #self.robotdiagrambuilder.builder(), self.scene_graph, self.meshcat, meshcat_params)
             self.meshcat.SetProperty("/Background", "top_color", [0.8, 0.8, 0.6])
             self.meshcat.SetProperty("/Background", "bottom_color",
                                     [0.9, 0.9, 0.9])

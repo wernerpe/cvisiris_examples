@@ -415,7 +415,7 @@ def get_shunk_plotter(plant, scene_graph, plant_context, diagram_context):
     print(frame_id_dict)
     geom_ids = [inspector.GetGeometries(inspector.GetFrameId(frame_id_dict[k]))[0] for k in frame_id_dict.keys()]
 
-    sh_frames = [9,10,11]
+    sh_frames = [int(plant.GetBodyByName('body').index()),int(plant.GetBodyByName('left_finger').index()),int(plant.GetBodyByName('right_finger').index())]
     sh_geom = [inspector.GetShape(id) for id in geom_ids] 
     sh_names = ['box', 'l','r']
 
@@ -428,8 +428,8 @@ def get_shunk_plotter(plant, scene_graph, plant_context, diagram_context):
                                     color)
             meshcat.SetTransform("/shunk/"+name+"/"+n, f)
     
-    def plot_endeff_poses(meshcat, qs, color = Rgba(1,1,0.1,0.8)):
+    def plot_endeff_poses(meshcat, qs, color = Rgba(1,1,0.1,0.8), prefix = ''):
         for i,q in enumerate(qs):
-            plot_endeff_pose(meshcat, q, f"_{i}", color)
+            plot_endeff_pose(meshcat, q, prefix+f"_{i}", color)
     
     return plot_endeff_poses

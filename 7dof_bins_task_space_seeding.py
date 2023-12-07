@@ -99,17 +99,21 @@ showres = partial(show_pose,
 #Determine task space regions of interest
 from visibility_utils import generate_distinct_colors
 geom_names = ['bin_base', 
-              'bin_base', 
-              'shelves_body']
+              #'bin_base', 
+              #'shelves_body'
+              ]
 model_names = ['binL', 
-               'binR', 
-               'shelves']
+               #'binR', 
+               #'shelves'
+               ]
 default_pos = [np.array([ 1.53294,  0.4056 ,  0.23294, -0.5944 ,0.,0.9056 ,0.]),
-               np.array([-1.53294,  0.4056 ,  0.23294, -0.5944 ,0.,  0.9056 ,0. ]),
-               np.array([ 0., -0.08940423,  0., -1.7087849,  0., 1.32867852,  0.])]
+               #np.array([-1.53294,  0.4056 ,  0.23294, -0.5944 ,0.,  0.9056 ,0. ]),
+               #np.array([ 0., -0.08940423,  0., -1.7087849,  0., 1.32867852,  0.])
+               ]
 approach_dir = [2, 
-                2, 
-                0] 
+                #2, 
+                #0
+                ] 
 approach_sign = [1,1,-1]
 ts_samplers = []
 cols = generate_distinct_colors(2*len(model_names), rgb = True)[1:]
@@ -156,8 +160,8 @@ checker = SceneGraphCollisionChecker(model = diagram,#.Clone(),
 vgraph_handle = partial(vgraph, checker = checker, parallelize = True) 
 
 
-if f"7dof_bin_sample_no_approachdir_{Npts}_{offset_size}_{seed}.pkl" in os.listdir('tmp'):
-    with open(f"tmp/7dof_bin_sample_no_approachdir_{Npts}_{offset_size}_{seed}.pkl", 'rb') as f:
+if f"7dof_bin_sample_no_clus_{Npts}_{offset_size}_{seed}.pkl" in os.listdir('tmp'):
+    with open(f"tmp/7dof_bin_sample_no_clus_{Npts}_{offset_size}_{seed}.pkl", 'rb') as f:
         d = pickle.load(f)
         q_obj = d['q_obj']
         t_obj = d['t_obj']
@@ -172,7 +176,7 @@ else:
         q_obj +=[q]
         t_obj +=[t]
         ad_obj +=[ad_obj]
-    with open(f"tmp/7dof_bin_sample_no_approachdir_{Npts}_{offset_size}_{seed}.pkl", 'wb') as f:
+    with open(f"tmp/7dof_bin_sample_no_clus_{Npts}_{offset_size}_{seed}.pkl", 'wb') as f:
         pickle.dump({'q_obj':q_obj, 't_obj':t_obj, 'ad_obj': ad_obj}, f)
 
 if SHOWSAMPLES:
@@ -199,29 +203,30 @@ for i, (q, t) in enumerate(zip(q_obj, t_obj)):
     clus_vals = np.arange(min_k,max_k, silhouette_method_steps)
     clus_vals_trials = []
     mean_sil = []
-    for k in clus_vals:
-        #print(k)
-        sil_loc = []
-        for _ in range(kmeans_trials):
-            km = KMeans(n_clusters=k).fit(q_regularized)
-            kmsol.append(km)
-            labels = km.labels_
-            sil_score = silhouette_score(q_regularized, labels, metric='euclidean')
-            sil.append(sil_score)
-            sil_loc.append(sil_score)
-            clus_vals_trials.append(k)
-        mean_sil.append(np.max(sil_loc))
-    fig = plt.figure()
-    plt.scatter(clus_vals_trials,sil)
-    plt.plot(clus_vals, mean_sil, c = 'r')
 
-    best_k = clus_vals[np.argmax(mean_sil)]
-    best_clustering_idx = np.argmax(mean_sil[np.argmax(mean_sil)])
-    best_clustering = kmsol[kmeans_trials*np.where(clus_vals == best_k)[0][0] + best_clustering_idx]
-    num_clusters = best_k
-    q_clus = [q[np.where(best_clustering.labels_ == l )[0], :] for l in range(num_clusters)]
-    t_clus = [t[np.where(best_clustering.labels_ == l )[0], :] for l in range(num_clusters)]
-    idx_clus = [np.where(best_clustering.labels_ == l )[0] for l in range(num_clusters)]
+    # for k in clus_vals:
+    #     #print(k)
+    #     sil_loc = []
+    #     for _ in range(kmeans_trials):
+    #         km = KMeans(n_clusters=k).fit(q_regularized)
+    #         kmsol.append(km)
+    #         labels = km.labels_
+    #         sil_score = silhouette_score(q_regularized, labels, metric='euclidean')
+    #         sil.append(sil_score)
+    #         sil_loc.append(sil_score)
+    #         clus_vals_trials.append(k)
+    #     mean_sil.append(np.max(sil_loc))
+    # fig = plt.figure()
+    # plt.scatter(clus_vals_trials,sil)
+    # plt.plot(clus_vals, mean_sil, c = 'r')
+
+    #best_k = clus_vals[np.argmax(mean_sil)]
+    #best_clustering_idx = np.argmax(mean_sil[np.argmax(mean_sil)])
+    #best_clustering = kmsol[kmeans_trials*np.where(clus_vals == best_k)[0][0] + best_clustering_idx]
+    #num_clusters = best_k
+    q_clus = [q]#[q[np.where(best_clustering.labels_ == l )[0], :] for l in range(num_clusters)]
+    t_clus = [t]#[t[np.where(best_clustering.labels_ == l )[0], :] for l in range(num_clusters)]
+    idx_clus = [np.arange(len(q))]#[np.where(best_clustering.labels_ == l )[0] for l in range(num_clusters)]
     clus_sizes = [len(qc) for qc in q_clus]
     cluster_sizes_obj.append(clus_sizes)
     num_clusters_obj.append(len(q_clus))
@@ -338,7 +343,7 @@ iris_handle = partial(SNOPT_IRIS_ellipsoid_parallel,
 seed_points, metrics, _ = get_iris_metrics([q_tot[c] for c in cliques_tot], col_hnd)
 
 if f"7dof_bin_regions_noapproachdir_{Npts}_{offset_size}_{seed}.pkl" in os.listdir('tmp'):
-    with open(f"tmp/7dof_bin_regions_noapproachdir_{Npts}_{offset_size}_{seed}.pkl", 'rb') as f:
+    with open(f"tmp/7dof_bin_regions_no_clus_{Npts}_{offset_size}_{seed}.pkl", 'rb') as f:
         d = pickle.load(f)
         regions_red = d['r']
         succs_sp = d['succs_sp']
@@ -346,7 +351,7 @@ if f"7dof_bin_regions_noapproachdir_{Npts}_{offset_size}_{seed}.pkl" in os.listd
         metrics = d['metrics']
 else:
     regions_red, succs_sp, is_full = iris_handle(seed_points, metrics, [])
-    with open(f"tmp/7dof_bin_regions_noapproachdir_{Npts}_{offset_size}_{seed}.pkl", 'wb') as f:
+    with open(f"tmp/7dof_bin_regions_no_clus_{Npts}_{offset_size}_{seed}.pkl", 'wb') as f:
         pickle.dump({'r':regions_red, 'succs_sp':succs_sp, 'sp': seed_points, 'metrics': metrics}, f)
 
 

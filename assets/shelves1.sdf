@@ -10,13 +10,13 @@
           </box>
         </geometry>
         <material>
-              <ambient>0.4 0.4 0.4 0.5</ambient>
-              <diffuse>0.4 0.4 0.4 0.5</diffuse>
+              <ambient>0.7 0.7 0.7 0.6</ambient>
+              <diffuse>0.7 0.7 0.7 0.6</diffuse>
               <emissive>0.4 0.4 0.2 0.0</emissive>
         </material>
         <material>
-              <ambient>0.4 0.4 0.4 0.5</ambient>
-              <diffuse>0.4 0.4 0.4 0.5</diffuse>
+              <ambient>0.7 0.7 0.7 0.6</ambient>
+              <diffuse>0.7 0.7 0.7 0.6</diffuse>
               <emissive>0.4 0.4 0.2 0.0</emissive>
         </material>
       </visual>
@@ -28,8 +28,8 @@
           </box>
         </geometry>
         <material>
-              <ambient>0.4 0.4 0.4 0.5</ambient>
-              <diffuse>0.4 0.4 0.4 0.5</diffuse>
+              <ambient>0.7 0.7 0.7 0.6</ambient>
+              <diffuse>0.7 0.7 0.7 0.6</diffuse>
               <emissive>0.4 0.4 0.2 0.0</emissive>
         </material>
       </visual>
@@ -59,8 +59,8 @@
           </box>
         </geometry>
         <material>
-              <ambient>0.4 0.4 0.4 0.5</ambient>
-              <diffuse>0.4 0.4 0.4 0.5</diffuse>
+              <ambient>0.7 0.7 0.7 0.6</ambient>
+              <diffuse>0.7 0.7 0.7 0.6</diffuse>
               <emissive>0.4 0.4 0.2 0.0</emissive>
         </material>
       </visual>
@@ -72,8 +72,8 @@
           </box>
         </geometry>
         <material>
-              <ambient>0.4 0.4 0.4 0.5</ambient>
-              <diffuse>0.4 0.4 0.4 0.5</diffuse>
+              <ambient>0.7 0.7 0.7 0.6</ambient>
+              <diffuse>0.7 0.7 0.7 0.6</diffuse>
               <emissive>0.4 0.4 0.2 0.0</emissive>
         </material>
       </visual>
@@ -85,8 +85,8 @@
           </box>
         </geometry>
         <material>
-              <ambient>0.4 0.4 0.4 0.5</ambient>
-              <diffuse>0.4 0.4 0.4 0.5</diffuse>
+              <ambient>0.7 0.7 0.7 0.6</ambient>
+              <diffuse>0.7 0.7 0.7 0.6</diffuse>
               <emissive>0.4 0.4 0.2 0.0</emissive>
         </material>
       </visual>
@@ -98,8 +98,8 @@
           </box>
         </geometry>
         <material>
-              <ambient>0.4 0.4 0.4 0.5</ambient>
-              <diffuse>0.4 0.4 0.4 0.5</diffuse>
+              <ambient>0.7 0.7 0.7 0.6</ambient>
+              <diffuse>0.7 0.7 0.7 0.6</diffuse>
               <emissive>0.4 0.4 0.2 0.0</emissive>
         </material>
       </visual>

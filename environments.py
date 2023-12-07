@@ -33,6 +33,22 @@ def plant_builder_5dof_ur5(use_meshcat = False, cfg = {'add_shelf': True, 'add_g
     scene_graph = ur.scene_graph
     return plant, scene_graph, diagram, diagram_context, plant_context, meshcat if use_meshcat else None
 
+def plant_builder_6dof_ur5(use_meshcat = False, cfg = {'add_shelf': True, 'add_gripper': True}):
+    ur = UrDiagram(num_ur = 1, weld_wrist = False, add_shelf = cfg['add_shelf'],
+                    add_gripper = cfg['add_gripper'], use_meshcat=use_meshcat)
+
+    if use_meshcat: meshcat = ur.meshcat
+    plant = ur.plant
+    diagram_context = ur.diagram.CreateDefaultContext()
+    ur.diagram.ForcedPublish(diagram_context)
+    diagram = ur.diagram
+    plant_context = ur.plant.GetMyMutableContextFromRoot(
+            diagram_context)
+    # scene_graph_context = ur.scene_graph.GetMyMutableContextFromRoot(
+    #     diagram_context)
+    scene_graph = ur.scene_graph
+    return plant, scene_graph, diagram, diagram_context, plant_context, meshcat if use_meshcat else None
+
 def plant_builder_2dof_flipper_obs(usemeshcat = False):
     if usemeshcat:
         #meshcat = StartMeshcat()
@@ -242,6 +258,30 @@ def plant_builder_7dof_iiwa(usemeshcat = False):
     diagram.ForcedPublish(diagram_context)
     return plant, scene_graph, diagram, diagram_context, plant_context, meshcat if usemeshcat else None
 
+def plant_builder_7dof_4shelves(usemeshcat = False):
+    if usemeshcat:
+        meld = Meldis()
+        meshcat = meld.meshcat
+    builder = RobotDiagramBuilder()
+    plant = builder.plant()
+    scene_graph = builder.scene_graph()
+    parser = builder.parser()
+    #parser.package_map().Add("cvisirisexamples", missing directory)
+    
+    directives_file = "7_dof_directives_4shelves.yaml"#FindResourceOrThrow() 
+    path_repo = os.path.dirname(os.path.abspath('')) #os.path.dirname(os.path.dirname(os.path.realpath(__file__))) # replace with {path to cvisirsexamples repo}
+    parser.package_map().Add("cvisiris", path_repo+"/cvisiris_examples/assets")
+    directives = LoadModelDirectives(directives_file)
+    models = ProcessModelDirectives(directives, plant, parser)
+    plant.Finalize()
+    if usemeshcat:
+        visualizer = AddDefaultVisualization(builder.builder(), meshcat)
+    diagram = builder.Build()
+    diagram_context = diagram.CreateDefaultContext()
+    plant_context = plant.GetMyContextFromRoot(diagram_context)
+    diagram.ForcedPublish(diagram_context)
+    return plant, scene_graph, diagram, diagram_context, plant_context, meshcat if usemeshcat else None
+
 def plant_builder_7dof_bins(usemeshcat = False):
     if usemeshcat:
         #meshcat = StartMeshcat()
@@ -316,7 +356,7 @@ def environment_builder_14dof_iiwas(usemeshcat = False):
     return plant, scene_graph, diagram, diagram_context, plant_context, meshcat if usemeshcat else None
 
 def get_environment_builder(environment_name):
-    valid_names = ['2DOFFLIPPER','3DOFFLIPPER', '5DOFUR5', '7DOFIIWA', '7DOFBINS', '14DOFIIWAS']
+    valid_names = ['2DOFFLIPPER','3DOFFLIPPER', '5DOFUR5', '6DOFUR5','7DOFIIWA', '7DOF4SHELVES', '7DOFBINS', '14DOFIIWAS']
     if not environment_name in valid_names:
         raise ValueError(f"Choose a valid environment {valid_names}")
     if environment_name == '2DOFFLIPPER':
@@ -325,10 +365,14 @@ def get_environment_builder(environment_name):
         return plant_builder_3dof_flipper
     elif environment_name == '5DOFUR5':
         return plant_builder_5dof_ur5
+    elif environment_name == '6DOFUR5':
+        return plant_builder_6dof_ur5
     elif environment_name == '7DOFIIWA':
         return plant_builder_7dof_iiwa
     elif environment_name == '7DOFBINS':
         return plant_builder_7dof_bins
+    elif environment_name == '7DOF4SHELVES':
+        return plant_builder_7dof_4shelves
     elif environment_name == '14DOFIIWAS':
         return environment_builder_14dof_iiwas
     return None

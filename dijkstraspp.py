@@ -101,7 +101,7 @@ class DijkstraSPP:
             print('[DijkstraSPP] Points not in regions')
             return [], -1
 
-    def get_region_sequence(self, wps, start, target):
+    def get_region_sequence(self, wps, start, target, start_in_set = True, end_in_set = True):
         region_sequence = []
         regions_start = []
         regions_target = []
